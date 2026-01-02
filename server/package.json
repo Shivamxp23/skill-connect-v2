@@ -1,0 +1,12 @@
+{
+  "name": "skillconnect-ai-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "@google/generative-ai": "latest",
+    "express": "latest",
+    "cors": "latest",
+    "dotenv": "latest"
+  }
+}
