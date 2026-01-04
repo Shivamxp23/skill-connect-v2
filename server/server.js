@@ -9,12 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
+// give basic startup info
 console.log("Starting backend...");
 
 const USE_MOCK = process.env.USE_MOCK === "true";
 
-
+// Only create Gemini client if API key present and not forcing mock
 let genAI = null;
 if (!USE_MOCK && process.env.GEMINI_API_KEY) {
   try {
@@ -27,7 +27,7 @@ if (!USE_MOCK && process.env.GEMINI_API_KEY) {
   console.log("Running in MOCK mode (no Gemini client). Set GEMINI_API_KEY to enable real AI.");
 }
 
-
+// Simple health route
 app.get("/", (req, res) => {
   res.json({ status: "ok", mock: USE_MOCK, gemini: !!genAI });
 });
@@ -38,6 +38,7 @@ app.post("/ai/skills", async (req, res) => {
     const { skills } = req.body;
 
     if (!genAI) {
+      // Return a mock-friendly response if gemini not configured
       return res.json({
         success: true,
         suggestions: `Mock suggestions because GEMINI_API_KEY is not set. Provided skills: ${skills.map(s => s.name + "(" + s.level + ")").join(", ")}`
@@ -52,7 +53,13 @@ User Skills:
 ${skills.map(s => `• ${s.name} (${s.level})`).join("\n")}
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      generationConfig: {
+        temperature: 0.4
+      }
+    });
+
     const result = await model.generateContent(prompt);
     const text = result.response.text();
 
@@ -76,7 +83,7 @@ app.post("/ai/analyse-collab", async (req, res) => {
 
     const { applicantGithub = "Not provided", requiredSkills = [], applicantName = "Applicant" } = req.body;
 
-    // If no Gemini client, return a deterministic mock to allow frontend testing
+    // If no Gemini client, return a example mock to allow frontend testing
     if (!genAI) {
       const mockScore = 78;
       return res.json({
@@ -90,7 +97,7 @@ app.post("/ai/analyse-collab", async (req, res) => {
     }
 
     // Real Gemini analysis
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
 You are an AI evaluating a contributor for a software project.
@@ -132,21 +139,21 @@ RULES:
     const text = result.response.text();
 
     const response = {
-  matchScore: extractNumber(text, "MATCH SCORE") || null,
-  strengths: extractList(text, "STRENGTHS"),
-  weaknesses: extractList(text, "WEAKNESSES"),
-  repoQuality: extractLine(text, "REPO QUALITY"),
-  recommendation: extractLine(text, "RECOMMENDATION"),
-  details: extractSection(text, "DETAILS"),
-  conclusion: extractSection(text, "CONCLUSION"),
-};
+      matchScore: extractNumber(text, "MATCH SCORE") || null,
+      strengths: extractList(text, "STRENGTHS"),
+      weaknesses: extractList(text, "WEAKNESSES"),
+      repoQuality: extractLine(text, "REPO QUALITY"),
+      recommendation: extractLine(text, "RECOMMENDATION"),
+      details: extractSection(text, "DETAILS"),
+      conclusion: extractSection(text, "CONCLUSION"),
+    };
 
-// Fixed fomatting of conclusions
-if (response.details && response.details.includes("CONCLUSION:")) {
-    const parts = response.details.split(/CONCLUSION:/i);
-    response.details = parts[0].trim();
-    response.conclusion = parts[1].trim();
-}
+    // Fix case where Gemini puts CONCLUSION inside DETAILS
+    if (response.details && response.details.includes("CONCLUSION:")) {
+      const parts = response.details.split(/CONCLUSION:/i);
+      response.details = parts[0].trim();
+      response.conclusion = parts[1].trim();
+    }
 
 
     res.json(response);
@@ -157,7 +164,7 @@ if (response.details && response.details.includes("CONCLUSION:")) {
   }
 });
 
-
+// parsing function
 function extractLine(text, key) {
   const match = text.match(new RegExp(`${key}:\\s*(.*)`, "i"));
   return match ? match[1].trim() : "";
