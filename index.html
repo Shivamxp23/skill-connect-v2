@@ -25,7 +25,7 @@
                         <li><a href="#" class="nav-link" data-page="clubs">Clubs</a></li>
                         <li><a href="#" class="nav-link" data-page="events">Events</a></li>
                         <li><a href="#" class="nav-link" data-page="projects">Projects collaboration</a></li>
-                        <li><a href="#" class="nav-link hidden" id="adminTab" data-page="admin">Admin</a></li>
+                        <li><a href="#" class="nav-link" data-page="skill-summary">Skill Summary</a></li>
                     </ul>
                 </nav>
                 <div class="auth-buttons">
@@ -47,7 +47,7 @@
 
                 <div class="role-selector">
                     <button class="role-btn active" data-role="student">Student</button>
-                    <button class="role-btn" data-role="admin">Administrator</button>
+                    <button class="role-btn" data-role="faculty">Faculty</button>
                 </div>
 
                 <div class="form-group">
@@ -62,7 +62,7 @@
                 <div style="text-align: center;">
                     <p>Demo Accounts:</p>
                     <p><strong>Student:</strong> student@skillconnect.edu / password</p>
-                    <p><strong>Admin:</strong> admin@skillconnect.edu / password</p>
+                    <p><strong>faculty:</strong> faculty@skillconnect.edu / password</p>
                 </div>
             </div>
         </div>
@@ -96,8 +96,26 @@
                                 <div class="stat-label">Skills</div>
                             </div>
                         </div>
-                        <button class="btn btn-student" style="width: 100%;" id="editStudentProfileBtn"><i
-                                class="fas fa-edit"></i> Edit Profile</button>
+                        
+                        <!-- LinkedIn Section -->
+                        <div class="linkedin-section" style="margin: 20px 0 15px 0; padding: 15px; background: rgba(0, 119, 181, 0.05); border-radius: 10px;">
+                            <h4 style="margin-bottom: 10px; color: var(--dark); font-size: 0.95rem;">
+                                <i class="fab fa-linkedin"></i> LinkedIn Profile
+                            </h4>
+                            <div id="studentLinkedinStatus" style="color: var(--gray); font-size: 0.85rem; margin-bottom: 10px;">
+                                Not connected
+                            </div>
+                            <button class="btn btn-linkedin" style="width: 100%;" id="connectStudentLinkedinBtn">
+                                <i class="fab fa-linkedin"></i> Connect LinkedIn Profile
+                            </button>
+                            <button class="btn btn-outline" style="width: 100%; margin-top: 8px; display: none;" id="viewStudentLinkedinBtn">
+                                <i class="fab fa-linkedin"></i> View LinkedIn Profile
+                            </button>
+                        </div>
+                        
+                        <button class="btn btn-student" style="width: 100%; margin-bottom: 10px;" id="editStudentProfileBtn">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
                     </div>
 
                     <div class="card">
@@ -280,6 +298,262 @@
         </div>
     </div>
 
+    <!-- Faculty Dashboard -->
+    <div class="page" id="faculty-dashboard">
+        <div class="container faculty-dashboard">
+            <h1 style="margin-bottom: 30px; color: var(--faculty-primary);">Faculty Dashboard</h1>
+
+            <div class="main-content fade-in">
+                <!-- Left Sidebar - Profile -->
+                <div class="left-sidebar">
+                    <div class="card profile-card">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="profile-name" id="facultyName">Yogita Parmar</div>
+                        <div class="profile-title" id="facultyTitle">AI Research Faculty</div>
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <div class="stat-value" id="facultyConnections">24</div>
+                                <div class="stat-label">Connections</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" id="facultyProjects">8</div>
+                                <div class="stat-label">Mentored</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" id="facultyPublications">12</div>
+                                <div class="stat-label">Publications</div>
+                            </div>
+                        </div>
+                        
+                        <!-- LinkedIn Section -->
+                        <div class="linkedin-section" style="margin: 20px 0 15px 0; padding: 15px; background: rgba(0, 119, 181, 0.05); border-radius: 10px;">
+                            <h4 style="margin-bottom: 10px; color: var(--dark); font-size: 0.95rem;">
+                                <i class="fab fa-linkedin"></i> LinkedIn Profile
+                            </h4>
+                            <div id="facultyLinkedinStatus" style="color: var(--gray); font-size: 0.85rem; margin-bottom: 10px;">
+                                Not connected
+                            </div>
+                            <button class="btn btn-linkedin" style="width: 100%;" id="connectFacultyLinkedinBtn">
+                                <i class="fab fa-linkedin"></i> Connect LinkedIn Profile
+                            </button>
+                            <button class="btn btn-outline" style="width: 100%; margin-top: 8px; display: none;" id="viewFacultyLinkedinBtn">
+                                <i class="fab fa-linkedin"></i> View LinkedIn Profile
+                            </button>
+                        </div>
+                        
+                        <button class="btn btn-faculty" style="width: 100%; margin-bottom: 10px;" id="editFacultyProfileBtn">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">My Skills</div>
+                        </div>
+                        <div class="skills-list" id="facultyResearchAreas">
+                            <span class="skill-tag" data-level="expert" data-category="research">
+                                Machine Learning
+                                <span class="skill-level-badge">Expert</span>
+                            </span>
+                            <span class="skill-tag" data-level="expert" data-category="research">
+                                Natural Language Processing
+                                <span class="skill-level-badge">Expert</span>
+                            </span>
+                            <span class="skill-tag" data-level="advanced" data-category="research">
+                                Computer Vision
+                                <span class="skill-level-badge">Advanced</span>
+                            </span>
+                            <span class="skill-tag" data-level="advanced" data-category="research">
+                                Data Science
+                                <span class="skill-level-badge">Advanced</span>
+                            </span>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 15px;" id="addResearchAreaBtn">
+                            <i class="fas fa-plus"></i> Add Skill
+                        </button>
+                        <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="analyzeResearchBtn">
+                            <i class="fas fa-brain"></i> Enhance Skills (AI)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Center Feed -->
+                <div class="center-feed">
+                    <!-- Active Projects Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Active Student Projects</div>
+                            <span style="color: var(--gray); font-size: 0.9rem;">Projects you're mentoring</span>
+                        </div>
+
+                        <div id="facultyActiveProjects">
+                            <div class="project-card-custom">
+                                <div class="project-header">
+                                    <strong>AI-Powered Learning Assistant</strong>
+                                    <span class="project-status status-approved">Approved</span>
+                                </div>
+                                <div style="color: var(--gray); font-size: 0.9rem; margin-top: 6px;">
+                                    Student: Meet Shah • CS Department
+                                </div>
+                                <p style="margin-top: 8px;">
+                                    Developing an AI assistant to help students with course material and assignments.
+                                </p>
+                                <div class="skills-list" style="margin-top: 10px;">
+                                    <span class="skill-tag">Python</span>
+                                    <span class="skill-tag">NLP</span>
+                                    <span class="skill-tag">TensorFlow</span>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-small view-project-btn" data-project-id="1">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="project-card-custom">
+                                <div class="project-header">
+                                    <strong>Smart Campus Navigation</strong>
+                                    <span class="project-status status-pending">Pending Review</span>
+                                </div>
+                                <div style="color: var(--gray); font-size: 0.9rem; margin-top: 6px;">
+                                    Student: Garvi Shah • CS Department
+                                </div>
+                                <p style="margin-top: 8px;">
+                                    Mobile app for indoor navigation on campus using AR and IoT sensors.
+                                </p>
+                                <div class="skills-list" style="margin-top: 10px;">
+                                    <span class="skill-tag">React Native</span>
+                                    <span class="skill-tag">AR</span>
+                                    <span class="skill-tag">IoT</span>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-small approve-project-btn" data-project-id="2">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-small reject-project-btn" data-project-id="2">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+
+                <!-- Right Sidebar -->
+                <div class="right-sidebar">
+                    <!-- Collaboration Requests -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Collaboration Requests</div>
+                            <span style="color: var(--gray); font-size: 0.9rem;">From students & faculty</span>
+                        </div>
+
+                        <div id="facultyCollaborationRequests">
+                            <div class="collaboration-request">
+                                <div class="post-header">
+                                    <div class="post-avatar">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div>
+                                        <div class="post-user">Janak Parmar</div>
+                                        <div class="post-time">CS Student • 2 days ago</div>
+                                    </div>
+                                </div>
+                                <p style="margin-top: 10px;">
+                                    Requesting guidance on my final year project about computer vision applications in
+                                    healthcare.
+                                </p>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-small accept-collab-btn" data-request-id="1">
+                                        <i class="fas fa-check"></i> Accept
+                                    </button>
+                                    <button class="btn btn-outline btn-small decline-collab-btn" data-request-id="1">
+                                        <i class="fas fa-times"></i> Decline
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="collaboration-request">
+                                <div class="post-header">
+                                    <div class="post-avatar">
+                                        <i class="fas fa-user-tie"></i>
+                                    </div>
+                                    <div>
+                                        <div class="post-user">Dr. kalpna Metre</div>
+                                        <div class="post-time">Data Science Dept • 5 days ago</div>
+                                    </div>
+                                </div>
+                                <p style="margin-top: 10px;">
+                                    Interested in collaborating on the NSF grant proposal for AI in education. Your
+                                    expertise in NLP would be valuable.
+                                </p>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-small accept-collab-btn" data-request-id="2">
+                                        <i class="fas fa-check"></i> Accept
+                                    </button>
+                                    <button class="btn btn-outline btn-small decline-collab-btn" data-request-id="2">
+                                        <i class="fas fa-times"></i> Decline
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student & Faculty Profiles -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Suggested Profiles</div>
+                        </div>
+                        
+                        <!-- Student Profile -->
+                        <div class="suggested-profile">
+                            <div class="profile-header">
+                                <div class="profile-avatar-small">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="profile-info">
+                                    <div class="profile-name-small">Meet Shah</div>
+                                    <div class="profile-title-small">Computer Science Student</div>
+                                </div>
+                            </div>
+                            <div class="profile-skills-small">
+                                <span class="skill-tag-small">Python</span>
+                                <span class="skill-tag-small">AI/ML</span>
+                                <span class="skill-tag-small">Research</span>
+                            </div>
+                            <button class="btn btn-linkedin btn-small" style="width: 100%; margin-top: 10px;">
+                                <i class="fab fa-linkedin"></i> View LinkedIn
+                            </button>
+                        </div>
+                        
+                        <!-- Faculty Profile -->
+                        <div class="suggested-profile" style="margin-top: 15px;">
+                            <div class="profile-header">
+                                <div class="profile-avatar-small">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="profile-info">
+                                    <div class="profile-name-small">Dr. Priya Sharma</div>
+                                    <div class="profile-title-small">AI Research Lead</div>
+                                </div>
+                            </div>
+                            <div class="profile-skills-small">
+                                <span class="skill-tag-small">Deep Learning</span>
+                                <span class="skill-tag-small">NLP</span>
+                                <span class="skill-tag-small">Publications</span>
+                            </div>
+                            <button class="btn btn-linkedin btn-small" style="width: 100%; margin-top: 10px;">
+                                <i class="fab fa-linkedin"></i> View LinkedIn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Network Page -->
     <div class="page" id="network-page">
         <div class="container network-page">
@@ -423,7 +697,7 @@
                                     <label for="roleFilter">Role</label>
                                     <select class="form-control" id="roleFilter">
                                         <option value="">All Roles</option>
-                                        <option value="student">Student</option>
+                                        <option value="student">Student</button>
                                         <option value="faculty">Faculty</option>
                                         <option value="alumni">Alumni</option>
                                         <option value="mentor">Mentor</option>
@@ -462,13 +736,10 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="card-title">People You May Know</div>
-                            <span id="resultsCount" style="color: var(--gray); font-size: 0.9rem;">6 profiles</span>
+                            <span id="resultsCount" style="color: var(--gray); font-size: 0.9rem;">12 profiles</span>
                         </div>
 
-                        <div class="profiles-grid">
-                            <!-- All Profile Cards (same as original file) -->
-                            <!-- Keeping content unchanged exactly -->
-
+                        <div class="profiles-grid scrollable-content" style="max-height: 500px; overflow-y: auto;">
                             <!-- Profile Card 1 -->
                             <div class="profile-card" data-department="computer science" data-role="student"
                                 data-year="3" data-skills="react,node.js,javascript">
@@ -564,6 +835,40 @@
                                     <span class="skill-tag">React Native</span>
                                     <span class="skill-tag">iOS</span>
                                     <span class="skill-tag">Firebase</span>
+                                </div>
+                                <div class="profile-actions">
+                                    <button class="btn btn-primary">Connect</button>
+                                    <button class="btn btn-outline">View Profile</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Card 7 -->
+                            <div class="profile-card" data-department="computer science" data-role="faculty"
+                                data-skills="ai,ml,research">
+                                <div class="profile-avatar"><i class="fas fa-user-tie"></i></div>
+                                <div class="profile-name">Dr. Priya Sharma</div>
+                                <div class="profile-title">AI Research Faculty</div>
+                                <div class="profile-skills">
+                                    <span class="skill-tag">AI/ML</span>
+                                    <span class="skill-tag">Research</span>
+                                    <span class="skill-tag">Python</span>
+                                </div>
+                                <div class="profile-actions">
+                                    <button class="btn btn-primary">Connect</button>
+                                    <button class="btn btn-outline">View Profile</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Card 8 -->
+                            <div class="profile-card" data-department="design" data-role="faculty"
+                                data-skills="ui/ux,design,prototyping">
+                                <div class="profile-avatar"><i class="fas fa-user-tie"></i></div>
+                                <div class="profile-name">Prof. Rohan Verma</div>
+                                <div class="profile-title">Design Department Head</div>
+                                <div class="profile-skills">
+                                    <span class="skill-tag">UI/UX</span>
+                                    <span class="skill-tag">Design</span>
+                                    <span class="skill-tag">Prototyping</span>
                                 </div>
                                 <div class="profile-actions">
                                     <button class="btn btn-primary">Connect</button>
@@ -708,144 +1013,172 @@
     </div>
 
     <!-- Clubs Page (NEW 3 Column Layout) -->
-        <div class="page" id="clubs-page">
+    <div class="page" id="clubs-page">
         <div class="container club-management">
-
             <div class="page-header">
                 <h1 style="margin-bottom: 10px; color: var(--primary);">University Clubs</h1>
                 <p style="color: var(--gray);">Explore clubs, apply for opportunities & manage your memberships.</p>
             </div>
 
             <div class="main-content">
-
-                <!-- LEFT: My Clubs -->
+                <!-- LEFT: My Clubs (Full Height) -->
                 <div class="left-sidebar">
-                    <div class="card">
+                    <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">My Clubs</div>
                         </div>
-                        <div id="myClubsList">
+                        <div id="myClubsList" class="scrollable-content">
                             <div class="club-card-custom">
                                 <strong>CodeOrbit Club</strong>
                                 <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Oct 2024</p>
+                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
                             </div>
 
                             <div class="club-card-custom">
                                 <strong>AI & Robotics Club</strong>
                                 <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Aug 2024</p>
+                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
+                            </div>
+                            
+                            <!-- Additional clubs for scroll demonstration -->
+                            <div class="club-card-custom">
+                                <strong>Web Dev Community</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Sep 2024</p>
+                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
+                            </div>
+                            
+                            <div class="club-card-custom">
+                                <strong>Data Science Society</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Nov 2024</p>
+                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
                             </div>
                         </div>
-
                     </div>
                 </div>
-            
 
-                <!-- CENTER: Club Requests -->
+                <!-- CENTER: Club Opportunities (Scrollable) -->
                 <div class="center-feed">
-                    <div class="card">
+                    <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">Club Opportunities</div>
                             <div style="color:var(--gray); font-size:0.9rem;">Roles opened by clubs</div>
                         </div>
 
-                        <div id="requestsContainer">
-                            <div id="requestsContainer">
-                                <div class="club-card-custom">
-                                    <strong>CodeOrbit Club – Frontend Developer</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Looking for a React developer to
-                                        maintain event portal UI.</p>
-                                    <button class="btn btn-primary" style="margin-top: 10px;">Apply</button>
-                                </div>
-
-                                <div class="club-card-custom">
-                                    <strong>Hexsociety - – Hardware Team</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Open for students interested in
-                                        Arduino + IoT.</p>
-                                    <button class="btn btn-primary" style="margin-top: 10px;">Apply</button>
-                                </div>
-
-                                <div class="club-card-custom">
-                                    <strong>GDG – Web Pentester</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Seeking volunteers for penetration
-                                        testing sessions.</p>
-                                    <button class="btn btn-primary" style="margin-top: 10px;">Apply</button>
-                                </div>
+                        <div id="requestsContainer" class="scrollable-content">
+                            <div class="club-card-custom">
+                                <strong>CodeOrbit Club – Frontend Developer</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Looking for a React developer to maintain event portal UI.</p>
+                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
                             </div>
 
+                            <div class="club-card-custom">
+                                <strong>HexSociety – Hardware Team</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Open for students interested in Arduino + IoT.</p>
+                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
+                            </div>
+
+                            <div class="club-card-custom">
+                                <strong>GDG – Web Pentester</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Seeking volunteers for penetration testing sessions.</p>
+                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
+                            </div>
+                            
+                            <!-- Additional opportunities for scroll demonstration -->
+                            <div class="club-card-custom">
+                                <strong>AI Club – ML Engineer</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Help develop machine learning models for projects.</p>
+                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
+                            </div>
+                            
+                            <div class="club-card-custom">
+                                <strong>Design Club – UI/UX Designer</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Design interfaces for club websites and apps.</p>
+                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
+                            </div>
+                            
+                            <div class="club-card-custom">
+                                <strong>Robotics Club – Programmer</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Code for robotics competitions and automation.</p>
+                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- RIGHT: Available Clubs -->
+                <!-- RIGHT: Available Clubs (Full Height) -->
                 <div class="right-sidebar">
-                    <div class="card">
+                    <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">All Clubs</div>
                         </div>
-                        <div id="allClubsList">
-                            <div id="allClubsList">
-                                <div class="club-card-custom">
-                                    <strong>CodeOrbit Club</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Focuses on coding competitions,
-                                        hackathons & software projects.</p>
-                                    <button class="btn btn-outline" style="margin-top: 8px;">Join Club</button>
-                                </div>
+                        <div id="allClubsList" class="scrollable-content">
+                            <div class="club-card-custom">
+                                <strong>CodeOrbit Club</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Focuses on coding competitions, hackathons & software projects.</p>
+                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
+                            </div>
 
-                                <div class="club-card-custom">
-                                    <strong>TechnoLab</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">
-                                        "Not just another event — it's a space where ideas spark, creativity thrives,
-                                        and people grow."
-                                    </p>
-                                    <button class="btn btn-outline" style="margin-top: 8px;">Join Club</button>
-                                </div>
+                            <div class="club-card-custom">
+                                <strong>TechnoLab</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">
+                                    "Not just another event — it's a space where ideas spark, creativity thrives, and people grow."
+                                </p>
+                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
+                            </div>
 
-                                <div class="club-card-custom">
-                                    <strong>HexSociety</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">
-                                        "Let's breathe some binary & code like there is no tomorrow."
-                                    </p>
-                                    <button class="btn btn-outline" style="margin-top: 8px;">Join Club</button>
-                                </div>
+                            <div class="club-card-custom">
+                                <strong>HexSociety</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">
+                                    "Let's breathe some binary & code like there is no tomorrow."
+                                </p>
+                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
+                            </div>
 
-                                <div class="club-card-custom">
-                                    <strong>GDG — Google Developer Group (On Campus)</strong>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">
-                                        "Flex the Hex"
-                                    </p>
-                                    <button class="btn btn-outline" style="margin-top: 8px;">Join Club</button>
-                                </div>
-
+                            <div class="club-card-custom">
+                                <strong>GDG — Google Developer Group (On Campus)</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">
+                                    "Flex the Hex"
+                                </p>
+                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
+                            </div>
+                            
+                            <!-- Additional clubs for scroll demonstration -->
+                            <div class="club-card-custom">
+                                <strong>AI & Robotics Club</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Exploring artificial intelligence and robotic systems.</p>
+                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
+                            </div>
+                            
+                            <div class="club-card-custom">
+                                <strong>Data Science Society</strong>
+                                <p style="color: var(--gray); font-size: 0.9rem;">Data analysis, visualization, and machine learning applications.</p>
+                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Event Page -->
+    <div class="page" id="events-page">
+        <div class="container events-page">
+            <div class="page-header">
+                <h1 style="margin-bottom: 10px; color: var(--primary);">Events</h1>
+                <p style="color: var(--gray); margin-bottom: 30px;">Stay updated with department workshops,
+                    seminars, and competitions.</p>
+            </div>
 
-        <!-- Event Page -->
-        <div class="page" id="events-page">
-            <div class="container events-page">
-
-                <div class="page-header">
-                    <h1 style="margin-bottom: 10px; color: var(--primary);">Events</h1>
-                    <p style="color: var(--gray); margin-bottom: 30px;">Stay updated with department workshops,
-                        seminars,
-                        and competitions.</p>
-                </div>
-
-                <div class="main-content">
-
-                    <!-- LEFT SIDEBAR -->
-                    <div class="left-sidebar">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Upcoming Events</div>
-                            </div>
-
+            <div class="main-content">
+                <!-- LEFT SIDEBAR - Upcoming Events -->
+                <div class="left-sidebar">
+                    <div class="card full-height-card">
+                        <div class="card-header">
+                            <div class="card-title">Upcoming Events</div>
+                        </div>
+                        
+                        <div class="scrollable-content">
                             <div class="event-card">
                                 <div class="event-date">
                                     <div class="event-day">10</div>
@@ -854,6 +1187,7 @@
                                 <div class="event-details">
                                     <div class="event-title">AI & ML Workshop</div>
                                     <div class="event-time">10:00 AM – 1:00 PM</div>
+                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
                                 </div>
                             </div>
 
@@ -865,67 +1199,45 @@
                                 <div class="event-details">
                                     <div class="event-title">Git & GitHub Mastery</div>
                                     <div class="event-time">2:00 PM – 5:00 PM</div>
+                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
+                                </div>
+                            </div>
+                            
+                            <div class="event-card">
+                                <div class="event-date">
+                                    <div class="event-day">22</div>
+                                    <div class="event-month">DEC</div>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">Web Dev Bootcamp</div>
+                                    <div class="event-time">9:00 AM – 4:00 PM</div>
+                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
+                                </div>
+                            </div>
+                            
+                            <div class="event-card">
+                                <div class="event-date">
+                                    <div class="event-day">05</div>
+                                    <div class="event-month">JAN</div>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">Data Science Summit</div>
+                                    <div class="event-time">11:00 AM – 2:00 PM</div>
+                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- CENTER SECTION -->
-                    <div class="center-feed">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Upcoming Events</div>
-                            </div>
-
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">10</div>
-                                    <div class="event-month">DEC</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">AI & ML Workshop</div>
-                                    <div class="event-time">Lab 304 · 10:00 AM – 1:00 PM</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">Hands-on session covering Machine
-                                        Learning model building & deployment.</p>
-                                    <button class="btn btn-primary" style="margin-top: 10px;">Register</button>
-                                </div>
-                            </div>
-
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">12</div>
-                                    <div class="event-month">DEC</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Research Paper Writing</div>
-                                    <div class="event-time">Seminar Hall · 11:00 AM – 1:00 PM</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">Learn effective research methods,
-                                        citation formats, and publication tips.</p>
-                                    <button class="btn btn-primary" style="margin-top: 10px;">Register</button>
-                                </div>
-                            </div>
-
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">18</div>
-                                    <div class="event-month">DEC</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Git & GitHub Mastery</div>
-                                    <div class="event-time">Lab 102 · 2:00 PM – 5:00 PM</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">A complete guide to version control,
-                                        branches, pull requests, and GitHub actions.</p>
-                                    <button class="btn btn-primary" style="margin-top: 10px;">Register</button>
-                                </div>
-                            </div>
+                <!-- CENTER SECTION - Past Events -->
+                <div class="center-feed">
+                    <div class="card full-height-card">
+                        <div class="card-header">
+                            <div class="card-title">Past Events</div>
                         </div>
-
-                        <!-- PAST EVENTS -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Past Events</div>
-                            </div>
-
+                        
+                        <div class="scrollable-content">
                             <div class="event-card">
                                 <div class="event-date">
                                     <div class="event-day">05</div>
@@ -935,7 +1247,7 @@
                                     <div class="event-title">Hackathon 2025</div>
                                     <div class="event-time">Completed</div>
                                     <p style="margin-top: 8px; color: var(--gray);">120+ participants, 36 teams, 24-hour
-                                        challenge. Winning project: “AI Health Tracker”.</p>
+                                        challenge. Winning project: "AI Health Tracker".</p>
                                 </div>
                             </div>
 
@@ -948,8 +1260,7 @@
                                     <div class="event-title">Cyber Security Bootcamp</div>
                                     <div class="event-time">Completed</div>
                                     <p style="margin-top: 8px; color: var(--gray);">Covered exploits, network attacks,
-                                        and
-                                        secure coding practices.</p>
+                                        and secure coding practices.</p>
                                 </div>
                             </div>
 
@@ -965,187 +1276,338 @@
                                         discussions with industry experts.</p>
                                 </div>
                             </div>
+                            
+                            <div class="event-card">
+                                <div class="event-date">
+                                    <div class="event-day">08</div>
+                                    <div class="event-month">SEP</div>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">Startup Pitch Day</div>
+                                    <div class="event-time">Completed</div>
+                                    <p style="margin-top: 8px; color: var(--gray);">Student startups pitched to investors.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="event-card">
+                                <div class="event-date">
+                                    <div class="event-day">25</div>
+                                    <div class="event-month">AUG</div>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">Mobile App Workshop</div>
+                                    <div class="event-time">Completed</div>
+                                    <p style="margin-top: 8px; color: var(--gray);">React Native & Flutter hands-on session.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- RIGHT SIDEBAR -->
-                    <div class="right-sidebar">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Event Stats</div>
-                            </div>
-
-                            <div class="stat-card student" style="margin-bottom: 10px;">
+                <!-- RIGHT SIDEBAR - Event Stats -->
+                <div class="right-sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Event Stats</div>
+                        </div>
+                        
+                        <div class="event-stats-grid">
+                            <div class="stat-card student" style="margin-bottom: 15px;">
                                 <div class="stat-number">12</div>
                                 <div class="stat-label">Events This Semester</div>
                             </div>
-
-                            <div class="stat-card student" style="margin-bottom: 10px;">
+                            
+                            <div class="stat-card student" style="margin-bottom: 15px;">
                                 <div class="stat-number">5</div>
                                 <div class="stat-label">Workshops</div>
                             </div>
-
-                            <div class="stat-card student">
+                            
+                            <div class="stat-card student" style="margin-bottom: 15px;">
                                 <div class="stat-number">3</div>
                                 <div class="stat-label">Competitions</div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- END OF EVENTS PAGE -->
-
-        <!-- Project Collaboration page -->
-        <div class="page" id="projects-page">
-            <div class="container projects-page">
-
-                <div class="page-header">
-                    <h1 style="margin-bottom: 10px; color: var(--primary);">Project Collaboration</h1>
-                    <p style="color: var(--gray); margin-bottom: 30px;">
-                        Manage your projects, find teammates, and review contributor requests.
-                    </p>
-                </div>
-
-                <div class="main-content">
-                    <!-- LEFT: My Projects (user's own projects + details) -->
-                    <div class="left-sidebar">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">My Projects</div>
-                                <span style="font-size:0.8rem; color:var(--gray);">Your ongoing contributions</span>
-                            </div>
-
-                            <div id="myProjectsList">
-                                <!-- Example placeholder — will be replaced by JS -->
-                                <div class="project-card-custom no-projects-msg"
-                                    style="color:var(--gray); padding:12px;">
-                                    You haven't posted any projects yet. Use the form on the right to add a project.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CENTER: Public Project Feed (others' posted projects) -->
-                    <div class="center-feed">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Project Feed</div>
-                                <span style="color:var(--gray); font-size:0.9rem;">Projects posted by others — apply to
-                                    join</span>
-                            </div>
-
-                            <div id="projectFeedList">
-                                <!-- feed items added by JS (or existing static cards) -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- RIGHT: Create Project + Incoming Requests -->
-                    <div class="right-sidebar">
-                        <!-- Create Project -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Raise a New Project</div>
-                            </div>
-
-                            <div class="project-upload-form">
-                                <input type="text" class="form-control" id="pc_projTitle" placeholder="Project Title">
-                                <textarea class="form-control" id="pc_projDesc" rows="3"
-                                    placeholder="Project Description"></textarea>
-                                <input type="text" class="form-control" id="pc_projGithub"
-                                    placeholder="GitHub Repository URL (optional)">
-                                <label style="margin-top:10px; font-weight:600;">Required Skills (comma
-                                    separated)</label>
-                                <input type="text" class="form-control" id="pc_projSkills"
-                                    placeholder="e.g. React, Node.js, ML">
-                                <label style="margin-top:10px; font-weight:600;">Roles Needed</label>
-                                <input type="text" class="form-control" id="pc_projRoles"
-                                    placeholder="e.g. Frontend, Backend, Designer">
-                                <button class="btn btn-primary" style="margin-top:15px;" id="pc_postProjectBtn">
-                                    <i class="fas fa-upload"></i> Post Project
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Incoming Requests to my projects -->
-                        <div class="card" style="margin-top: 16px;">
-                            <div class="card-header">
-                                <div class="card-title">Requests From Contributors</div>
-                                <span style="color:var(--gray); font-size:0.9rem;">Requests to join your projects</span>
-                            </div>
-
-                            <div id="incomingRequestsList">
-                                <div class="no-requests" style="color:var(--gray); padding:12px;">
-                                    No incoming requests yet.
-                                </div>
+                            
+                            <div class="stat-card student">
+                                <div class="stat-number">89%</div>
+                                <div class="stat-label">Average Attendance</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div> <!-- END OF EVENTS PAGE -->
 
-        <!-- Analyse Modal (re-usable) -->
-        <div class="modal-overlay" id="pc_analyseModal" style="display:none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>AI Contributor Analysis</h3>
-                    <button class="modal-close" id="pc_closeAnalyseModal">&times;</button>
+    <!-- Project Collaboration page -->
+    <div class="page" id="projects-page">
+        <div class="container projects-page">
+            <div class="page-header">
+                <h1 style="margin-bottom: 10px; color: var(--primary);">Project Collaboration</h1>
+                <p style="color: var(--gray); margin-bottom: 30px;">
+                    Manage your projects, find teammates, and review contributor requests.
+                </p>
+            </div>
+
+            <div class="main-content">
+                <!-- LEFT: My Projects (user's own projects + details) -->
+                <div class="left-sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">My Projects</div>
+                            <span style="font-size:0.8rem; color:var(--gray);">Your ongoing contributions</span>
+                        </div>
+
+                        <div id="myProjectsList">
+                            <!-- Example placeholder — will be replaced by JS -->
+                            <div class="project-card-custom no-projects-msg" style="color:var(--gray); padding:12px;">
+                                You haven't posted any projects yet. Use the form on the right to add a project.
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body" id="pc_analyseContent">
-                    <p style="color:var(--gray);">Running analysis...</p>
+
+                <!-- CENTER: Public Project Feed (others' posted projects) -->
+                <div class="center-feed">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Project Feed</div>
+                            <span style="color:var(--gray); font-size:0.9rem;">Projects posted by others — apply to
+                                join</span>
+                        </div>
+
+                        <div id="projectFeedList">
+                            <!-- feed items added by JS (or existing static cards) -->
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline" id="pc_closeAnalyseBtn">Close</button>
+
+                <!-- RIGHT: Create Project + Incoming Requests -->
+                <div class="right-sidebar">
+                    <!-- Create Project -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Raise a New Project</div>
+                        </div>
+
+                        <div class="project-upload-form">
+                            <input type="text" class="form-control" id="pc_projTitle" placeholder="Project Title">
+                            <textarea class="form-control" id="pc_projDesc" rows="3"
+                                placeholder="Project Description"></textarea>
+                            <input type="text" class="form-control" id="pc_projGithub"
+                                placeholder="GitHub Repository URL (optional)">
+                            <label style="margin-top:10px; font-weight:600;">Required Skills (comma
+                                separated)</label>
+                            <input type="text" class="form-control" id="pc_projSkills"
+                                placeholder="e.g. React, Node.js, ML">
+                            <label style="margin-top:10px; font-weight:600;">Roles Needed</label>
+                            <input type="text" class="form-control" id="pc_projRoles"
+                                placeholder="e.g. Frontend, Backend, Designer">
+                            <button class="btn btn-primary" style="margin-top:15px;" id="pc_postProjectBtn">
+                                <i class="fas fa-upload"></i> Post Project
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Incoming Requests to my projects -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-header">
+                            <div class="card-title">Requests From Contributors</div>
+                            <span style="color:var(--gray); font-size:0.9rem;">Requests to join your projects</span>
+                        </div>
+
+                        <div id="incomingRequestsList">
+                            <div class="no-requests" style="color:var(--gray); padding:12px;">
+                                No incoming requests yet.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- Skill Summary Page -->
+    <div class="page" id="skill-summary-page">
+        <div class="container">
+            <div class="page-header">
+                <h1 style="margin-bottom: 10px; color: var(--primary);">Skill Summary</h1>
+                <p style="color: var(--gray); margin-bottom: 30px;">Overview of skills across the platform</p>
+            </div>
 
-
-        <!-- Footer -->
-        <footer id="main-footer" class="hidden">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-column">
-                        <h3>SkillConnect</h3>
-                        <p>Connecting students, faculty, and industry through skill development and collaboration.</p>
-                    </div>
-                    <div class="footer-column">
-                        <h3>Quick Links</h3>
-                        <ul class="footer-links">
-                            <li><a href="#" class="nav-link" data-page="dashboard">Dashboard</a></li>
-                            <li><a href="#" class="nav-link" data-page="network">Network</a></li>
-                            <li><a href="#" class="nav-link" data-page="clubs">Clubs</a></li>
-                            <li><a href="#" class="nav-link" data-page="events">Events</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h3>Resources</h3>
-                        <ul class="footer-links">
-                            <li><a href="#">Help Center</a></li>
-                            <li><a href="#">Blog</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><a href="#">Partners</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h3>Contact Us</h3>
-                        <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-envelope"></i> admissions@itmbu.ac.in</a></li>
-                            <li><a href="#"><i class="fas fa-phone"></i> 9714394081</a></li>
-                            <li><a href="#"><i class="fas fa-map-marker-alt"></i> University Campus</a></li>
-                        </ul>
-                    </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">Total Skills Tracked</div>
                 </div>
-
-                <div class="copyright">
-                    <p>&copy; 2025 SkillConnect. All rights reserved.</p>
+                <div class="stat-card">
+                    <div class="stat-number">42</div>
+                    <div class="stat-label">Programming Skills</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">28</div>
+                    <div class="stat-label">Design Skills</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">18</div>
+                    <div class="stat-label">Research Areas</div>
                 </div>
             </div>
-        </footer>
 
-        <script src="script.js"></script>
+            <div class="main-content">
+                <!-- Left Column -->
+                <div class="left-sidebar">
+                    <div class="card skill-category-card">
+                        <h3>Top Skills by Category</h3>
+                        <div class="skill-category">
+                            <h4>Programming</h4>
+                            <div class="skill-level-distribution">
+                                <div class="skill-level-item">
+                                    <span>JavaScript</span>
+                                    <span class="level-count">24</span>
+                                </div>
+                                <div class="level-bar">
+                                    <div class="level-fill" style="width: 85%"></div>
+                                </div>
+                                
+                                <div class="skill-level-item">
+                                    <span>Python</span>
+                                    <span class="level-count">18</span>
+                                </div>
+                                <div class="level-bar">
+                                    <div class="level-fill" style="width: 75%"></div>
+                                </div>
+                                
+                                <div class="skill-level-item">
+                                    <span>React</span>
+                                    <span class="level-count">15</span>
+                                </div>
+                                <div class="level-bar">
+                                    <div class="level-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Column -->
+                <div class="center-feed">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Skill Growth Trends</div>
+                        </div>
+                        <div style="padding: 20px;">
+                            <p style="color: var(--gray); margin-bottom: 15px;">
+                                Showing skill development trends over the last 6 months
+                            </p>
+                            <div class="trend-chart-placeholder" style="background: var(--light); height: 200px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                                Skill Growth Chart Visualization
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <h4>Key Insights:</h4>
+                                <ul style="margin-top: 10px; padding-left: 20px;">
+                                    <li>JavaScript skills increased by 32% this semester</li>
+                                    <li>AI/ML skills growing fastest among students</li>
+                                    <li>Demand for cloud computing skills up by 45%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Skill Recommendations</div>
+                        </div>
+                        <div style="padding: 15px;">
+                            <div class="recommendation-item">
+                                <h4>Emerging Skills</h4>
+                                <div class="skills-list" style="margin-top: 10px;">
+                                    <span class="skill-tag">Generative AI</span>
+                                    <span class="skill-tag">DevOps</span>
+                                    <span class="skill-tag">Cybersecurity</span>
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-item" style="margin-top: 20px;">
+                                <h4>High Demand Skills</h4>
+                                <div class="skills-list" style="margin-top: 10px;">
+                                    <span class="skill-tag">Cloud Computing</span>
+                                    <span class="skill-tag">Data Analysis</span>
+                                    <span class="skill-tag">UI/UX Design</span>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+                                <i class="fas fa-download"></i> Download Skill Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analyse Modal (re-usable) -->
+    <div class="modal-overlay" id="pc_analyseModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>AI Contributor Analysis</h3>
+                <button class="modal-close" id="pc_closeAnalyseModal">&times;</button>
+            </div>
+            <div class="modal-body" id="pc_analyseContent">
+                <p style="color:var(--gray);">Running analysis...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="pc_closeAnalyseBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="main-footer" class="hidden">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>SkillConnect</h3>
+                    <p>Connecting students, faculty, and industry through skill development and collaboration.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="nav-link" data-page="dashboard">Dashboard</a></li>
+                        <li><a href="#" class="nav-link" data-page="network">Network</a></li>
+                        <li><a href="#" class="nav-link" data-page="clubs">Clubs</a></li>
+                        <li><a href="#" class="nav-link" data-page="events">Events</a></li>
+                        <li><a href="#" class="nav-link" data-page="skill-summary">Skill Summary</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Partners</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-envelope"></i> admissions@itmbu.ac.in</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> 9714394081</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> University Campus</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>&copy; 2025 SkillConnect. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
-
 </html>
