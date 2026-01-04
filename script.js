@@ -1,7 +1,9 @@
+
 // User data
 let currentUser = null;
 let currentRole = 'student';
 let joinedClubs = [];
+let skillContext = 'student'; // or 'faculty'
 
 // DOM Elements
 const loginBtn = document.getElementById('submitLogin');
@@ -11,9 +13,6 @@ const navLinks = document.querySelectorAll('.nav-link');
 const pages = document.querySelectorAll('.page');
 const mainHeader = document.getElementById('main-header');
 const mainFooter = document.getElementById('main-footer');
-const adminTab = document.getElementById('adminTab');
-
-
 
 // Demo accounts
 const demoAccounts = {
@@ -23,8 +22,8 @@ const demoAccounts = {
         name: 'Shastri Namita',
         title: 'Computer Science Student'
     },
-    admin: {
-        email: 'admin@skillconnect.edu',
+    faculty: {
+        email: 'faculty@skillconnect.edu',
         password: 'password',
         name: 'Ms. Prachi Rajput',
         title: 'Platform Administrator'
@@ -33,6 +32,24 @@ const demoAccounts = {
 
 // Track currently editing skill
 let editingSkill = null;
+
+// LinkedIn state management
+let linkedinProfiles = {
+    student: {
+        connected: false,
+        profileUrl: null,
+        connections: 0,
+        followers: 0,
+        profileData: null
+    },
+    faculty: {
+        connected: false,
+        profileUrl: null,
+        connections: 0,
+        followers: 0,
+        profileData: null
+    }
+};
 
 //skill modelsystem
 function createSkillModal() {
@@ -95,19 +112,23 @@ function createSkillModal() {
         </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    // Prevent duplicate modal creation
+    if (!document.getElementById('skillModal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    document.getElementById('closeSkillModal').addEventListener('click', closeSkillModal);
-    document.getElementById('cancelSkillBtn').addEventListener('click', closeSkillModal);
-    document.getElementById('saveSkillBtn').addEventListener('click', saveSkill);
-    document.getElementById('deleteSkillBtn').addEventListener('click', deleteSkill);
+        document.getElementById('closeSkillModal').addEventListener('click', closeSkillModal);
+        document.getElementById('cancelSkillBtn').addEventListener('click', closeSkillModal);
+        document.getElementById('saveSkillBtn').addEventListener('click', saveSkill);
+        document.getElementById('deleteSkillBtn').addEventListener('click', deleteSkill);
 
-    document.getElementById('skillName').addEventListener('input', updateSkillPreview);
-    document.getElementById('skillLevel').addEventListener('change', updateSkillPreview);
+        document.getElementById('skillName').addEventListener('input', updateSkillPreview);
+        document.getElementById('skillLevel').addEventListener('change', updateSkillPreview);
+    }
 }
 
 function closeSkillModal() {
-    document.getElementById('skillModal').style.display = 'none';
+    const skillModal = document.getElementById('skillModal');
+    if (skillModal) skillModal.style.display = 'none';
     editingSkill = null;
 }
 
@@ -118,20 +139,6 @@ function updateSkillPreview() {
     document.getElementById('previewSkillName').textContent = skillName;
     document.getElementById('previewSkillLevel').textContent =
         skillLevel.charAt(0).toUpperCase() + skillLevel.slice(1);
-}
-
-function openSkillModal() {
-    editingSkill = null;
-    document.getElementById('modalTitle').textContent = 'Add New Skill';
-    document.getElementById('saveSkillBtn').textContent = 'Add Skill';
-    document.getElementById('deleteSection').style.display = 'none';
-
-    document.getElementById('skillName').value = '';
-    document.getElementById('skillLevel').value = 'beginner';
-    document.getElementById('skillCategory').value = 'programming';
-
-    updateSkillPreview();
-    document.getElementById('skillModal').style.display = 'flex';
 }
 
 function openEditSkillModal(skillElement) {
@@ -153,47 +160,26 @@ function openEditSkillModal(skillElement) {
     document.getElementById('skillModal').style.display = 'flex';
 }
 
-function saveSkill() {
-    const name = document.getElementById('skillName').value.trim();
-    const level = document.getElementById('skillLevel').value;
-    const category = document.getElementById('skillCategory').value;
+function initializeExistingSkills() {
+    const lists = [
+        document.getElementById('studentSkillsList'),
+        document.getElementById('facultyResearchAreas')
+    ];
 
-    if (!name) return alert('Enter a skill name');
+    lists.forEach(list => {
+        if (!list) return;
 
-    if (editingSkill) {
-        editingSkill.innerHTML = `
-            ${name}
-            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
-        `;
-        editingSkill.setAttribute('data-level', level);
-        editingSkill.setAttribute('data-category', category);
+        list.querySelectorAll('.skill-tag').forEach(skill => {
+            if (!skill.hasAttribute('data-edit-init')) {
+                skill.setAttribute('data-edit-init', 'true');
 
-        showNotification('Skill updated!', 'success');
-    } else {
-        const newSkill = document.createElement('span');
-        newSkill.className = 'skill-tag';
-        newSkill.setAttribute('data-level', level);
-        newSkill.setAttribute('data-category', category);
-
-        newSkill.innerHTML = `
-            ${name}
-            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
-        `;
-
-        newSkill.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openEditSkillModal(newSkill);
+                skill.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditSkillModal(skill);
+                });
+            }
         });
-
-        document.getElementById('studentSkillsList').appendChild(newSkill);
-
-        const count = document.getElementById('studentSkills');
-        count.textContent = parseInt(count.textContent) + 1;
-
-        showNotification('Skill added!', 'success');
-    }
-
-    closeSkillModal();
+    });
 }
 
 function deleteSkill() {
@@ -203,20 +189,13 @@ function deleteSkill() {
         editingSkill.remove();
 
         const count = document.getElementById('studentSkills');
-        count.textContent = parseInt(count.textContent) - 1;
+        if (count) {
+            count.textContent = parseInt(count.textContent) - 1;
+        }
 
         showNotification('Skill deleted!', 'success');
         closeSkillModal();
     }
-}
-
-function initializeExistingSkills() {
-    document.querySelectorAll('#studentSkillsList .skill-tag').forEach(skill => {
-        skill.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openEditSkillModal(skill);
-        });
-    });
 }
 
 //notifications
@@ -234,7 +213,6 @@ function showNotification(msg, type = 'info') {
     }, 2600);
 }
 
-
 //netwrok filter option
 function initializeNetworkFilters() {
     const departmentFilter = document.getElementById('departmentFilter');
@@ -248,7 +226,7 @@ function initializeNetworkFilters() {
 
     let activeFilters = {
         department: "",
-        skills: "",
+                skills: "",
         role: "",
         year: ""
     };
@@ -302,7 +280,6 @@ function initializeNetworkFilters() {
     applyFilters();
 }
 
-
 //connect btns
 function initializeConnectButtons() {
     const buttons = document.querySelectorAll('#network-page .btn-primary');
@@ -325,7 +302,6 @@ function initializeConnectButtons() {
         }
     });
 }
-
 
 //mentorship and groups
 function initializeMentorshipButtons() {
@@ -373,7 +349,6 @@ function initializeMentorshipButtons() {
 }
 
 //initialize network page
-
 function initializeNetworkPage() {
     initializeNetworkFilters();
     initializeConnectButtons();
@@ -381,7 +356,6 @@ function initializeNetworkPage() {
 }
 
 //navs + log in
-
 loginBtn.addEventListener('click', handleLogin);
 logoutBtn.addEventListener('click', handleLogout);
 
@@ -404,22 +378,67 @@ navLinks.forEach(link => {
     });
 });
 
-/* ---------------------- PAGE SWITCHER ---------------------- */
+//hiding club for faculty and skill summary for student
+// Hide role-specific pages & buttons
+function applyRoleBasedUI(role) {
 
+    // --- CLUBS ---
+    document.querySelectorAll('.nav-link[data-page="clubs"]').forEach(el => {
+        el.style.display = role === 'faculty' ? 'none' : '';
+    });
+
+    const exploreClubsBtn = document.getElementById('exploreClubsBtn');
+    if (exploreClubsBtn) {
+        exploreClubsBtn.style.display = role === 'faculty' ? 'none' : '';
+    }
+
+    // --- SKILL SUMMARY ---
+    document.querySelectorAll('.nav-link[data-page="skill-summary"]').forEach(el => {
+        el.style.display = role === 'student' ? 'none' : '';
+    });
+
+    const exploreSkillSummaryBtn = document.getElementById('exploreskill-summaryBtn');
+    if (exploreSkillSummaryBtn) {
+        exploreSkillSummaryBtn.style.display = role === 'student' ? 'none' : '';
+    }
+
+    // --- FORCE CLOSE PAGES ---
+    if (role === 'faculty') {
+        document.getElementById('clubs-page')?.classList.remove('active');
+    }
+
+    if (role === 'student') {
+        document.getElementById('skill-summary-page')?.classList.remove('active');
+    }
+}
+
+/* ---------------------- PAGE SWITCHER ---------------------- */
 function showPage(pageId) {
     pages.forEach(page => page.classList.remove('active'));
 
     if (pageId === 'dashboard') {
         if (currentRole === 'student') {
-            document.getElementById('student-dashboard').classList.add('active');
-        } else {
-            document.getElementById('admin-dashboard').classList.add('active');
-        }
-    } else {
-        document.getElementById(`${pageId}-page`).classList.add('active');
-        if (pageId === 'network') setTimeout(initializeNetworkPage, 100);
-        if (pageId === 'dashboard' && currentRole === 'student')
+            document.getElementById('student-dashboard')?.classList.add('active');
             setTimeout(initializeExistingSkills, 100);
+        } else {
+            document.getElementById('faculty-dashboard')?.classList.add('active');
+        }
+        return;
+    }
+
+    // Handle skill-summary page
+    if (pageId === 'skill-summary') {
+        document.getElementById('skill-summary-page')?.classList.add('active');
+        return;
+    }
+
+    const pageEl = document.getElementById(`${pageId}-page`);
+    if (pageEl) {
+        pageEl.classList.add('active');
+    }
+
+    if (pageId === 'network') {
+        setTimeout(initializeNetworkPage, 100);
     }
 
     if (pageId === 'clubs') {
@@ -428,10 +447,17 @@ function showPage(pageId) {
             updateMyClubsUI();
         }, 100);
     }
+
+    if (pageId === 'projects') {
+        setTimeout(pc_onProjectsPageShow, 150);
+    }
+
+    if (pageId === 'events') {
+        setTimeout(initializeEventsPage, 100);
+    }
 }
 
 //login handle
-
 function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const pass = document.getElementById('loginPassword').value;
@@ -453,20 +479,25 @@ function showDashboard() {
     mainHeader.classList.remove('hidden');
     mainFooter.classList.remove('hidden');
 
+    applyRoleBasedUI(currentRole); // role-based navbar + UI
+
+    pages.forEach(p => p.classList.remove('active'));
     document.getElementById('login-page').classList.remove('active');
 
-    if (currentRole === 'student') {
-        document.getElementById('student-dashboard').classList.add('active');
-        document.getElementById('studentName').textContent = currentUser.name;
-        document.getElementById('studentTitle').textContent = currentUser.title;
-        adminTab.classList.add('hidden');
-    } else {
-        document.getElementById('admin-dashboard').classList.add('active');
-        adminTab.classList.remove('hidden');
-    }
+    const cfg = ROLE_CONFIG[currentRole];
+
+    document.getElementById(cfg.dashboardId).classList.add('active');
+    document.getElementById(cfg.nameId).textContent = currentUser.name;
+    document.getElementById(cfg.titleId).textContent = currentUser.title;
 
     navLinks.forEach(n => n.classList.remove('active'));
     document.querySelector('[data-page="dashboard"]').classList.add('active');
+
+    setTimeout(initializeSkills, 100);
+    
+    // Initialize LinkedIn buttons
+    initializeLinkedInButtons();
+    setTimeout(initializeLinkedInOnDashboardLoad, 150);
 }
 
 function handleLogout() {
@@ -479,8 +510,8 @@ function handleLogout() {
 
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
+    applyRoleBasedUI('student');
 }
-
 
 //club join leave ui
 function initializeJoinClubButtons() {
@@ -612,7 +643,6 @@ function updateAllClubsButtons() {
     });
 }
 
-
 //gemini ai enhance btn helpers
 async function getGeminiSkillSuggestions(skills) {
     try {
@@ -693,8 +723,6 @@ function fixAISuggestions(text) {
     return html;
 }
 
-
-
 //enhance btn model
 function createEnhanceModal() {
     const modalHTML = `
@@ -726,34 +754,7 @@ function closeEnhanceModal() {
     if (modal) modal.style.display = "none";
 }
 
-//improved ui as per size
-
-document.getElementById("enhanceSkillBtn")?.addEventListener("click", async () => {
-    const modal = document.getElementById("enhanceModal");
-    const content = document.getElementById("enhanceContent");
-
-    if (!modal) return;
-
-    modal.style.display = "flex";
-    content.innerHTML = `<p style="color: var(--gray);">Analyzing your skills using AI...</p>`;
-
-    // Gather user's current skills
-    const skillElements = document.querySelectorAll("#studentSkillsList .skill-tag");
-    let skills = [];
-    skillElements.forEach(s => {
-        let name = s.childNodes[0].textContent.trim();
-        let level = s.getAttribute("data-level");
-        skills.push({ name, level });
-    });
-
-    const aiOutput = await getGeminiSkillSuggestions(skills);
-    const html = fixAISuggestions(aiOutput);
-
-    content.innerHTML = `<div style="line-height: 1.6;">${html}</div>`;
-});
-
 //example profile and demo btns
-
 document.getElementById('addStudentSkillBtn')?.addEventListener('click', openSkillModal);
 
 document.getElementById('editStudentProfileBtn')?.addEventListener('click', () => {
@@ -783,8 +784,6 @@ document.getElementById('exploreClubsBtn')?.addEventListener('click', () => {
     document.querySelector('[data-page="clubs"]').classList.add('active');
 });
 
-
-
 // Click outside modals to close
 document.addEventListener('click', (e) => {
     const skillModal = document.getElementById('skillModal');
@@ -812,13 +811,10 @@ function declineRequest(button) {
     showNotification(`You declined ${name}'s request`, 'error');
 }
 
-
 //project collab page
-
 // In-memory store
-let pc_projects = [];    
-let pc_requests = [];   
-
+let pc_projects = [];
+let pc_requests = [];
 
 //incroming request
 function pc_renderIncomingRequests() {
@@ -972,7 +968,6 @@ function pc_renderProjectFeed() {
     });
 }
 
-
 //posting a projcet
 document.getElementById('pc_postProjectBtn')?.addEventListener('click', () => {
     const title = pc_projTitle.value.trim();
@@ -1012,10 +1007,8 @@ document.getElementById('pc_postProjectBtn')?.addEventListener('click', () => {
     pc_projRoles.value = "";
 });
 
-
 //join btn
 document.addEventListener('click', (e) => {
-
     if (e.target.closest('.pc-apply-btn')) {
         const btn = e.target.closest('.pc-apply-btn');
         const projId = btn.getAttribute('data-project-id');
@@ -1052,12 +1045,9 @@ document.addEventListener('click', (e) => {
 
         showNotification("Request sent!", "success");
     }
-
 });
 
-
 document.addEventListener('click', (e) => {
-
     // ACCEPT
     if (e.target.closest('.pc-accept-btn')) {
         const id = e.target.getAttribute('data-request-id');
@@ -1093,9 +1083,7 @@ document.addEventListener('click', (e) => {
 
         pc_openAnalyseModal(req);
     }
-
 });
-
 
 //analyse button model functionlity
 function pc_openAnalyseModal(req) {
@@ -1149,7 +1137,6 @@ document.getElementById('pc_closeAnalyseModal')?.addEventListener('click', () =>
 document.getElementById('pc_closeAnalyseBtn')?.addEventListener('click', () => {
     document.getElementById('pc_analyseModal').style.display = 'none';
 });
-
 
 //example data
 function pc_initializeDemoContent() {
@@ -1255,7 +1242,6 @@ document.querySelectorAll('.nav-link').forEach(nav => {
     });
 });
 
-
 //forcing skill buttons to work on loading of page
 window.addEventListener("load", () => {
     console.log("INIT: Creating modals...");
@@ -1273,4 +1259,583 @@ window.addEventListener("load", () => {
 
     // Attach modal closing support
     initializeExistingSkills();
+});
+
+// Faculty-specific event handlers
+document.getElementById('editFacultyProfileBtn')?.addEventListener('click', function () {
+    if (!currentUser) {
+        showNotification('Please login first', 'error');
+        return;
+    }
+
+    const name = prompt('Enter your name:', currentUser.name);
+    if (name) {
+        currentUser.name = name;
+        document.getElementById('facultyName').textContent = name;
+    }
+
+    const title = prompt('Enter your title:', currentUser.title);
+    if (title) {
+        currentUser.title = title;
+        document.getElementById('facultyTitle').textContent = title;
+    }
+});
+
+// Faculty action buttons event delegation
+document.addEventListener('click', function (e) {
+    // Project approval
+    if (e.target.closest('.approve-project-btn')) {
+        const projectId = e.target.closest('.approve-project-btn').getAttribute('data-project-id');
+        const projectCard = e.target.closest('.project-card-custom');
+
+        projectCard.querySelector('.project-status').textContent = 'Approved';
+        projectCard.querySelector('.project-status').className = 'project-status status-approved';
+
+        // Replace approval buttons with view/message buttons
+        const actionButtons = projectCard.querySelector('.action-buttons');
+        actionButtons.innerHTML = `
+            <button class="btn btn-primary btn-small view-project-btn" data-project-id="${projectId}">
+                <i class="fas fa-eye"></i> View Details
+            </button>
+            <button class="btn btn-outline btn-small message-student-btn" data-student="Student Name">
+                <i class="fas fa-comment"></i> Message
+            </button>
+        `;
+
+        showNotification('Project approved successfully!', 'success');
+    }
+
+    // Project rejection
+    if (e.target.closest('.reject-project-btn')) {
+        const projectId = e.target.closest('.reject-project-btn').getAttribute('data-project-id');
+        const projectCard = e.target.closest('.project-card-custom');
+
+        projectCard.querySelector('.project-status').textContent = 'Rejected';
+        projectCard.querySelector('.project-status').className = 'project-status status-rejected';
+
+        // Replace rejection buttons with view button only
+        const actionButtons = projectCard.querySelector('.action-buttons');
+        actionButtons.innerHTML = `
+            <button class="btn btn-primary btn-small view-project-btn" data-project-id="${projectId}">
+                <i class="fas fa-eye"></i> View Details
+            </button>
+        `;
+
+        showNotification('Project rejected', 'error');
+    }
+
+    // Collaboration request acceptance
+    if (e.target.closest('.accept-collab-btn')) {
+        const requestId = e.target.closest('.accept-collab-btn').getAttribute('data-request-id');
+        const requestCard = e.target.closest('.collaboration-request');
+
+        // Update UI
+        requestCard.style.borderLeftColor = '#28a745';
+        requestCard.querySelector('.action-buttons').innerHTML = `
+            <span style="color: var(--success); font-weight: 600;">
+                <i class="fas fa-check"></i> Collaboration Accepted
+            </span>
+        `;
+
+        showNotification('Collaboration request accepted!', 'success');
+    }
+
+    // Collaboration request decline
+    if (e.target.closest('.decline-collab-btn')) {
+        const requestId = e.target.closest('.decline-collab-btn').getAttribute('data-request-id');
+        const requestCard = e.target.closest('.collaboration-request');
+
+        // Fade out and remove
+        requestCard.style.opacity = '0.5';
+        setTimeout(() => {
+            requestCard.remove();
+        }, 500);
+
+        showNotification('Collaboration request declined', 'error');
+    }
+
+    // View project details
+    if (e.target.closest('.view-project-btn')) {
+        const projectId = e.target.closest('.view-project-btn').getAttribute('data-project-id');
+        alert(`Viewing details for project ID: ${projectId}`);
+    }
+
+    // Message student/author
+    if (e.target.closest('.message-student-btn') || e.target.closest('.message-author-btn')) {
+        const name = e.target.closest('button').getAttribute('data-student') ||
+            e.target.closest('button').getAttribute('data-author');
+        alert(`Opening messaging interface with ${name}`);
+    }
+});
+
+//generalization common functions
+/* =========================================================
+   UNIFIED ROLE CONFIGURATION
+========================================================= */
+const ROLE_CONFIG = {
+    student: {
+        dashboardId: 'student-dashboard',
+        nameId: 'studentName',
+        titleId: 'studentTitle',
+        skillListId: 'studentSkillsList',
+        skillCountId: 'studentSkills',
+        addSkillBtnId: 'addStudentSkillBtn',
+        aiBtnId: 'enhanceSkillBtn',
+        modalAddTitle: 'Add New Skill',
+        modalAddBtn: 'Add Skill',
+        defaultCategory: 'programming'
+    },
+    faculty: {
+        dashboardId: 'faculty-dashboard',
+        nameId: 'facultyName',
+        titleId: 'facultyTitle',
+        skillListId: 'facultyResearchAreas',
+        skillCountId: null,
+        addSkillBtnId: 'addResearchAreaBtn',
+        aiBtnId: 'analyzeResearchBtn',
+        modalAddTitle: 'Add Research Area',
+        modalAddBtn: 'Add Research Area',
+        defaultCategory: 'research'
+    }
+};
+
+/* =========================================================
+   SKILL INITIALIZER (FIXES FACULTY CLICK BUG)
+========================================================= */
+function initializeSkills() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const list = document.getElementById(cfg.skillListId);
+    if (!list) return;
+
+    list.querySelectorAll('.skill-tag').forEach(skill => {
+        if (!skill.dataset.bound) {
+            skill.dataset.bound = "true";
+            skill.addEventListener('click', e => {
+                e.stopPropagation();
+                openEditSkillModal(skill);
+            });
+        }
+    });
+}
+
+/* =========================================================
+   ROLE-AWARE SKILL MODAL
+========================================================= */
+function openSkillModal() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const modalTitle = document.getElementById('modalTitle');
+    const saveSkillBtn = document.getElementById('saveSkillBtn');
+    const deleteSection = document.getElementById('deleteSection');
+    const skillName = document.getElementById('skillName');
+    const skillLevel = document.getElementById('skillLevel');
+    const skillCategory = document.getElementById('skillCategory');
+    const skillModal = document.getElementById('skillModal');
+
+    if (!skillModal) {
+        createSkillModal();
+        // Wait for modal to be created
+        setTimeout(() => openSkillModal(), 100);
+        return;
+    }
+
+    editingSkill = null;
+
+    modalTitle.textContent = cfg.modalAddTitle;
+    saveSkillBtn.textContent = cfg.modalAddBtn;
+    deleteSection.style.display = 'none';
+
+    skillName.value = '';
+    skillLevel.value = 'intermediate';
+    skillCategory.value = cfg.defaultCategory;
+
+    updateSkillPreview();
+    skillModal.style.display = 'flex';
+}
+
+/* =========================================================
+   ROLE-AWARE SAVE SKILL
+========================================================= */
+function saveSkill() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const skillName = document.getElementById('skillName');
+    const skillLevel = document.getElementById('skillLevel');
+    const skillCategory = document.getElementById('skillCategory');
+
+    const name = skillName.value.trim();
+    const level = skillLevel.value;
+    const category = skillCategory.value;
+
+    if (!name) return alert('Enter a skill name');
+
+    if (editingSkill) {
+        editingSkill.innerHTML = `
+            ${name}
+            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+        `;
+        editingSkill.dataset.level = level;
+        editingSkill.dataset.category = category;
+        showNotification('Skill updated!', 'success');
+    } else {
+        const skill = document.createElement('span');
+        skill.className = 'skill-tag';
+        skill.dataset.level = level;
+        skill.dataset.category = category;
+        skill.innerHTML = `
+            ${name}
+            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+        `;
+
+        document.getElementById(cfg.skillListId).appendChild(skill);
+
+        if (cfg.skillCountId) {
+            const count = document.getElementById(cfg.skillCountId);
+            count.textContent = parseInt(count.textContent) + 1;
+        }
+
+        showNotification('Skill added!', 'success');
+    }
+
+    closeSkillModal();
+    initializeSkills();
+}
+
+/* =========================================================
+   UNIFIED AI ANALYSIS (STUDENT + FACULTY)
+========================================================= */
+async function runAIAnalysis() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const enhanceModal = document.getElementById('enhanceModal');
+    const enhanceContent = document.getElementById('enhanceContent');
+    
+    if (!enhanceModal) {
+        createEnhanceModal();
+        setTimeout(() => runAIAnalysis(), 100);
+        return;
+    }
+    
+    enhanceModal.style.display = 'flex';
+    enhanceContent.innerHTML = `<p style="color:var(--gray)">Analyzing...</p>`;
+
+    const items = [];
+    document.querySelectorAll(`#${cfg.skillListId} .skill-tag`).forEach(tag => {
+        items.push({
+            name: tag.childNodes[0].textContent.trim(),
+            level: tag.dataset.level || 'intermediate'
+        });
+    });
+
+    const aiOutput = await getGeminiSkillSuggestions(items);
+    enhanceContent.innerHTML = `
+        <h4>AI Insights</h4>
+        <div style="line-height:1.6; margin-top:8px;">
+            ${fixAISuggestions(aiOutput)}
+        </div>
+    `;
+}
+
+/* =========================================================
+   BIND BUTTONS (ONCE)
+========================================================= */
+Object.values(ROLE_CONFIG).forEach(cfg => {
+    document.getElementById(cfg.addSkillBtnId)?.addEventListener('click', openSkillModal);
+    document.getElementById(cfg.aiBtnId)?.addEventListener('click', runAIAnalysis);
+});
+
+// Initialize LinkedIn buttons
+function initializeLinkedInButtons() {
+    // Student LinkedIn buttons
+    const studentConnectBtn = document.getElementById('connectStudentLinkedinBtn');
+    const studentViewBtn = document.getElementById('viewStudentLinkedinBtn');
+    
+    if (studentConnectBtn) {
+        studentConnectBtn.addEventListener('click', () => {
+            connectLinkedIn('student');
+        });
+    }
+    
+    if (studentViewBtn) {
+        studentViewBtn.addEventListener('click', () => {
+            viewLinkedInProfile('student');
+        });
+    }
+    
+    // Faculty LinkedIn buttons
+    const facultyConnectBtn = document.getElementById('connectFacultyLinkedinBtn');
+    const facultyViewBtn = document.getElementById('viewFacultyLinkedinBtn');
+    
+    if (facultyConnectBtn) {
+        facultyConnectBtn.addEventListener('click', () => {
+            connectLinkedIn('faculty');
+        });
+    }
+    
+    if (facultyViewBtn) {
+        facultyViewBtn.addEventListener('click', () => {
+            viewLinkedInProfile('faculty');
+        });
+    }
+    
+    // Update initial state
+    updateLinkedInUI('student');
+    updateLinkedInUI('faculty');
+}
+
+// Connect LinkedIn function
+function connectLinkedIn(role) {
+    const profileName = role === 'student' 
+        ? currentUser?.name || 'Student User' 
+        : currentUser?.name || 'Faculty Member';
+    
+    // Simulate LinkedIn OAuth flow
+    const linkedinUrl = prompt(
+        `Enter your LinkedIn profile URL for ${profileName}:\n\nExample: https://www.linkedin.com/in/yourusername`,
+        `https://www.linkedin.com/in/${profileName.toLowerCase().replace(/\s+/g, '-')}`
+    );
+    
+    if (linkedinUrl) {
+        // Validate URL format
+        if (linkedinUrl.includes('linkedin.com/in/')) {
+            // Simulate successful connection
+            linkedinProfiles[role] = {
+                connected: true,
+                profileUrl: linkedinUrl,
+                connections: Math.floor(Math.random() * 500) + 100,
+                followers: Math.floor(Math.random() * 1000) + 50,
+                profileData: {
+                    headline: role === 'student' ? 'Computer Science Student' : 'AI Research Faculty',
+                    location: 'University Campus',
+                    joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                }
+            };
+            
+            // Update UI
+            updateLinkedInUI(role);
+            
+            // Show success notification
+            showNotification(`${role.charAt(0).toUpperCase() + role.slice(1)} LinkedIn profile connected!`, 'success');
+        } else {
+            alert('Please enter a valid LinkedIn profile URL (should contain linkedin.com/in/)');
+        }
+    }
+}
+
+// View LinkedIn profile
+function viewLinkedInProfile(role) {
+    const profile = linkedinProfiles[role];
+    
+    if (profile.connected && profile.profileUrl) {
+        // In a real app, this would open the LinkedIn profile
+        // For demo, show a modal with profile info
+        const profileName = role === 'student' 
+            ? currentUser?.name || 'Student User' 
+            : currentUser?.name || 'Faculty Member';
+        
+        const modalContent = `
+            <div style="text-align: left;">
+                <h3 style="color: #0077B5; margin-bottom: 15px;">
+                    <i class="fab fa-linkedin"></i> LinkedIn Profile
+                </h3>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="font-weight: 600; font-size: 1.1rem; color: #0077B5; margin-bottom: 5px;">
+                        ${profileName}
+                    </div>
+                    <div style="color: var(--gray); margin-bottom: 10px;">
+                        ${profile.profileData.headline}
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666;">
+                        <i class="fas fa-map-marker-alt"></i> ${profile.profileData.location}
+                    </div>
+                </div>
+                
+                <div class="linkedin-stats">
+                    <div class="linkedin-stat">
+                        <div class="linkedin-stat-value">${profile.connections}+</div>
+                        <div class="linkedin-stat-label">Connections</div>
+                    </div>
+                    <div class="linkedin-stat">
+                        <div class="linkedin-stat-value">${profile.followers}</div>
+                        <div class="linkedin-stat-label">Followers</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.9rem;">
+                    <strong>Profile URL:</strong>
+                    <div class="profile-url" style="word-break: break-all; margin-top: 5px;">
+                        <a href="${profile.profileUrl}" target="_blank">${profile.profileUrl}</a>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
+                    <i class="fas fa-info-circle"></i> In a real implementation, this would redirect to LinkedIn
+                </div>
+            </div>
+        `;
+        
+        // Show modal with profile info
+        if (confirm(`Open LinkedIn profile for ${profileName}?\n\nURL: ${profile.profileUrl}\n\nClick OK to see profile details`)) {
+            // Create a simple modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #0077B5;">LinkedIn Profile Preview</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray);">&times;</button>
+                    </div>
+                    ${modalContent}
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button onclick="window.open('${profile.profileUrl}', '_blank'); this.closest('.modal-overlay').remove();" style="background: #0077B5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            Open in New Tab
+                        </button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: var(--gray); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.remove();
+                }
+            });
+        }
+    } else {
+        showNotification('LinkedIn profile not connected yet', 'error');
+    }
+}
+
+// Update LinkedIn UI based on connection status
+function updateLinkedInUI(role) {
+    const profile = linkedinProfiles[role];
+    const statusElement = document.getElementById(`${role}LinkedinStatus`);
+    const connectBtn = document.getElementById(`connect${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
+    const viewBtn = document.getElementById(`view${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
+    
+    if (!statusElement || !connectBtn) return;
+    
+    if (profile.connected) {
+        statusElement.innerHTML = `
+            <span class="linkedin-connected">
+                <i class="fas fa-check-circle"></i> Connected
+            </span>
+            <br>
+            <small style="color: var(--gray);">Last synced: Just now</small>
+        `;
+        connectBtn.style.display = 'none';
+        if (viewBtn) {
+            viewBtn.style.display = 'block';
+        }
+    } else {
+        statusElement.innerHTML = `
+            <span class="linkedin-disconnected">
+                <i class="fas fa-unlink"></i> Not connected
+            </span>
+            <br>
+            <small style="color: var(--gray);">Connect to share your profile</small>
+        `;
+        connectBtn.style.display = 'block';
+        if (viewBtn) {
+            viewBtn.style.display = 'none';
+        }
+    }
+}
+
+// Sync LinkedIn data (simulated)
+function syncLinkedInData(role) {
+    if (linkedinProfiles[role].connected) {
+        // Simulate syncing data
+        const profile = linkedinProfiles[role];
+        
+        // Update some stats randomly
+        profile.connections += Math.floor(Math.random() * 10);
+        profile.followers += Math.floor(Math.random() * 5);
+        
+        // Update UI
+        updateLinkedInUI(role);
+        
+        showNotification('LinkedIn data synced successfully!', 'success');
+    } else {
+        showNotification('Please connect LinkedIn first', 'error');
+    }
+}
+
+// Initialize LinkedIn functionality when dashboard loads
+function initializeLinkedInOnDashboardLoad() {
+    if (currentRole) {
+        // Update UI
+        updateLinkedInUI(currentRole);
+    }
+}
+
+// Initialize clubs page scroll functionality
+function initializeClubsPage() {
+    const clubCards = document.querySelectorAll('#allClubsList .club-card-custom .btn-outline');
+    clubCards.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const clubName = this.closest('.club-card-custom')
+                .querySelector('strong').textContent;
+            
+            this.textContent = "Joined ✔";
+            this.classList.remove("btn-outline");
+            this.classList.add("btn-primary");
+            this.disabled = true;
+            
+            showNotification(`Joined ${clubName}`, "success");
+        });
+    });
+}
+
+// Initialize events page
+function initializeEventsPage() {
+    // Make all scrollable content functional
+    const scrollableElements = document.querySelectorAll('.scrollable-content');
+    scrollableElements.forEach(el => {
+        if (el.scrollHeight > el.clientHeight) {
+            el.style.overflowY = 'auto';
+        }
+    });
+}
+
+//init loead
+window.addEventListener('load', () => {
+    if (!document.getElementById("skillModal")) {
+        createSkillModal();
+    }
+
+    if (!document.getElementById("enhanceModal")) {
+        createEnhanceModal();
+    }
+
+    initializeExistingSkills();
+    initializeLinkedInButtons();
+    
+    // Initialize when dashboard is shown
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.nav-link[data-page="dashboard"]')) {
+            setTimeout(initializeLinkedInOnDashboardLoad, 100);
+        }
+    });
+    
+    // Also initialize on page load if already on dashboard
+    if (document.querySelector('#student-dashboard.active') || document.querySelector('#faculty-dashboard.active')) {
+        setTimeout(initializeLinkedInOnDashboardLoad, 100);
+    }
 });
