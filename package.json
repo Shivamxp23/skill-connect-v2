@@ -1,0 +1,9 @@
+{
+  "name": "skill-connect",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SkillConnect - run the full app with one command",
+  "scripts": {
+    "start": "cd server && node server.js"
+  }
+}

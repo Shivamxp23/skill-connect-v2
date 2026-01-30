@@ -14,7 +14,10 @@ const pages = document.querySelectorAll('.page');
 const mainHeader = document.getElementById('main-header');
 const mainFooter = document.getElementById('main-footer');
 
-// Demo accounts
+// API base URL (same origin when served by server)
+const API_BASE = window.location.origin || 'http://localhost:3000';
+
+// Demo account hints (emails shown on login page; password is in DB)
 const demoAccounts = {
     student: {
         email: 'student@skillconnect.edu',
@@ -182,20 +185,26 @@ function initializeExistingSkills() {
     });
 }
 
-function deleteSkill() {
+async function deleteSkill() {
     if (!editingSkill) return;
 
-    if (confirm('Delete this skill?')) {
-        editingSkill.remove();
+    if (!confirm('Delete this skill?')) return;
 
-        const count = document.getElementById('studentSkills');
-        if (count) {
-            count.textContent = parseInt(count.textContent) - 1;
+    const skillName = editingSkill.childNodes[0].textContent.trim();
+    if (currentUser?.id) {
+        try {
+            const res = await fetch(`${API_BASE}/api/user/${currentUser.id}/skills/${encodeURIComponent(skillName)}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Delete failed');
+        } catch (err) {
+            console.error(err);
+            showNotification('Could not delete from database', 'error');
         }
-
-        showNotification('Skill deleted!', 'success');
-        closeSkillModal();
     }
+    editingSkill.remove();
+    const count = document.getElementById('studentSkills');
+    if (count) count.textContent = Math.max(0, parseInt(count.textContent, 10) - 1);
+    showNotification('Skill deleted!', 'success');
+    closeSkillModal();
 }
 
 //notifications
@@ -457,21 +466,38 @@ function showPage(pageId) {
     }
 }
 
-//login handle
-function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
+//login handle — uses SQL database via /api/login
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPassword').value;
 
     if (!email || !pass) return alert('Please fill in all fields');
 
-    if (email === demoAccounts[currentRole].email &&
-        pass === demoAccounts[currentRole].password) {
+    try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass, role: currentRole })
+        });
+        const data = await res.json();
 
-        currentUser = demoAccounts[currentRole];
-        showDashboard();
-        showNotification(`Welcome ${currentUser.name}!`, 'success');
-    } else {
-        alert('Invalid email or password.');
+        if (data.success && data.user) {
+            currentUser = {
+                id: data.user.id,
+                email: data.user.email,
+                name: data.user.name,
+                title: data.user.title || '',
+                role: data.user.role
+            };
+            showDashboard();
+            showNotification(`Welcome ${currentUser.name}!`, 'success');
+            loadUserSkillsFromDb();
+        } else {
+            alert(data.error || 'Invalid email or password.');
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        alert('Cannot reach server. Start the server and ensure the database is set up.');
     }
 }
 
@@ -643,10 +669,39 @@ function updateAllClubsButtons() {
     });
 }
 
+// Load user skills from SQL database and populate dashboard list
+async function loadUserSkillsFromDb() {
+    if (!currentUser || !currentUser.id) return;
+    const cfg = ROLE_CONFIG[currentUser.role] || ROLE_CONFIG.student;
+    const listEl = document.getElementById(cfg.skillListId);
+    if (!listEl) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/user/${currentUser.id}/skills`);
+        const data = await res.json();
+        if (!data.success || !data.skills || !data.skills.length) return;
+        listEl.innerHTML = '';
+        data.skills.forEach(s => {
+            const tag = document.createElement('span');
+            tag.className = 'skill-tag';
+            tag.dataset.level = (s.proficiency_level || 'intermediate').toLowerCase();
+            tag.dataset.category = s.category || 'programming';
+            tag.innerHTML = `${s.name}<span class="skill-level-badge">${(s.proficiency_level || 'Intermediate').replace(/^\w/, c => c.toUpperCase())}</span>`;
+            listEl.appendChild(tag);
+        });
+        if (cfg.skillCountId) {
+            const countEl = document.getElementById(cfg.skillCountId);
+            if (countEl) countEl.textContent = data.skills.length;
+        }
+        setTimeout(initializeSkills, 50);
+    } catch (err) {
+        console.error('Load skills error:', err);
+    }
+}
+
 //gemini ai enhance btn helpers
 async function getGeminiSkillSuggestions(skills) {
     try {
-        const res = await fetch("http://localhost:3000/ai/skills", {
+        const res = await fetch(`${API_BASE}/ai/skills`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ skills })
@@ -1093,7 +1148,7 @@ function pc_openAnalyseModal(req) {
 
     content.innerHTML = `<p style="color:var(--gray);">Analyzing ${req.applicantName}...</p>`;
 
-    fetch("http://localhost:3000/ai/analyse-collab", {
+    fetch(`${API_BASE}/ai/analyse-collab`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1455,7 +1510,7 @@ function openSkillModal() {
 /* =========================================================
    ROLE-AWARE SAVE SKILL
 ========================================================= */
-function saveSkill() {
+async function saveSkill() {
     const cfg = ROLE_CONFIG[currentRole];
     const skillName = document.getElementById('skillName');
     const skillLevel = document.getElementById('skillLevel');
@@ -1476,6 +1531,22 @@ function saveSkill() {
         editingSkill.dataset.category = category;
         showNotification('Skill updated!', 'success');
     } else {
+        if (currentUser?.id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/${currentUser.id}/skills`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, category, proficiency_level: level })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Failed to save');
+            } catch (err) {
+                console.error(err);
+                showNotification('Could not save to database', 'error');
+                closeSkillModal();
+                return;
+            }
+        }
         const skill = document.createElement('span');
         skill.className = 'skill-tag';
         skill.dataset.level = level;
@@ -1489,7 +1560,7 @@ function saveSkill() {
 
         if (cfg.skillCountId) {
             const count = document.getElementById(cfg.skillCountId);
-            count.textContent = parseInt(count.textContent) + 1;
+            count.textContent = parseInt(count.textContent, 10) + 1;
         }
 
         showNotification('Skill added!', 'success');

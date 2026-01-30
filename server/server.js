@@ -1,13 +1,28 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  getUserByEmail,
+  verifyPassword,
+  getUserSkills,
+  addUserSkill,
+  deleteUserSkill,
+} from "./db.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from project root (parent of server/)
+const staticDir = path.join(__dirname, "..");
+app.use(express.static(staticDir));
 
 // give basic startup info
 console.log("Starting backend...");
@@ -27,9 +42,96 @@ if (!USE_MOCK && process.env.GEMINI_API_KEY) {
   console.log("Running in MOCK mode (no Gemini client). Set GEMINI_API_KEY to enable real AI.");
 }
 
-// Simple health route
-app.get("/", (req, res) => {
+// Health check (for API clients)
+app.get("/health", (req, res) => {
   res.json({ status: "ok", mock: USE_MOCK, gemini: !!genAI });
+});
+
+// SPA: serve index.html for non-API routes so the app loads when opening the site
+app.get("/", (req, res) => {
+  res.sendFile(path.join(staticDir, "index.html"));
+});
+
+// ---------- Database API ----------
+
+// Login
+app.post("/api/login", (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: "Email and password required." });
+    }
+    const user = getUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ success: false, error: "Invalid email or password." });
+    }
+    if (!verifyPassword(password, user.password_hash)) {
+      return res.status(401).json({ success: false, error: "Invalid email or password." });
+    }
+    if (role && user.role !== role) {
+      return res.status(403).json({
+        success: false,
+        error: `Please log in as ${user.role}. You selected ${role}.`,
+      });
+    }
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.full_name,
+        title: user.title || "",
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ success: false, error: "Server error." });
+  }
+});
+
+// Get user skills
+app.get("/api/user/:id/skills", (req, res) => {
+  try {
+    const { id } = req.params;
+    const skills = getUserSkills(id);
+    res.json({ success: true, skills });
+  } catch (err) {
+    console.error("Get skills error:", err);
+    res.status(500).json({ success: false, error: "Server error." });
+  }
+});
+
+// Add user skill
+app.post("/api/user/:id/skills", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, category, proficiency_level } = req.body;
+    if (!name || !proficiency_level) {
+      return res.status(400).json({ success: false, error: "name and proficiency_level required." });
+    }
+    addUserSkill(id, { name, category, proficiency_level });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Add skill error:", err);
+    res.status(500).json({ success: false, error: "Server error." });
+  }
+});
+
+// Delete user skill (by skill name)
+app.delete("/api/user/:id/skills/:skillName", (req, res) => {
+  try {
+    const { id, skillName } = req.params;
+    const decodedName = decodeURIComponent(skillName);
+    const result = deleteUserSkill(id, decodedName);
+    if (!result.success) {
+      return res.status(404).json({ success: false, error: result.error || "Skill not found." });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Delete skill error:", err);
+    res.status(500).json({ success: false, error: "Server error." });
+  }
 });
 
 // Skill enhancement endpoint 

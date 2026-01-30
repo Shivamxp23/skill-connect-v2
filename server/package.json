@@ -5,8 +5,14 @@
   "main": "server.js",
   "dependencies": {
     "@google/generative-ai": "latest",
-    "express": "latest",
+    "bcryptjs": "latest",
+    "better-sqlite3": "latest",
     "cors": "latest",
-    "dotenv": "latest"
+    "dotenv": "latest",
+    "express": "latest",
+    "path-to-regexp": "^6.2.2"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }
