@@ -41,8 +41,15 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const slug = Array.isArray(req.query.slug) ? req.query.slug : (req.query.slug ? [req.query.slug] : []);
-  const [r0, r1, r2, r3] = slug;
+  let slugArray = [];
+  if (req.query.slug) {
+    if (Array.isArray(req.query.slug)) {
+      slugArray = req.query.slug.flatMap(s => s.split("/"));
+    } else {
+      slugArray = req.query.slug.split("/");
+    }
+  }
+  const [r0, r1, r2, r3] = slugArray.filter(Boolean);
   const M = req.method;
 
   try {
@@ -247,9 +254,22 @@ export default async function handler(req, res) {
       if (r1 && r2 === "unregister" && M === "POST") return res.json(await db.unregisterFromEvent(user.id, r1));
     }
 
-    return res.status(404).json({ success: false, error: "Not found" });
+    return res.status(404).json({ success: false, error: "Not found", path: req.query.slug });
   } catch (err) {
     console.error("API error:", err);
-    return res.status(500).json({ success: false, error: "Server error" });
+    // Return detailed errors to help debug Vercel deployment issues
+    const errorMessage = err.message || "Unknown Server Error";
+    let helpfulHint = "";
+    
+    if (errorMessage.includes("POSTGRES_URL") || errorMessage.includes("NeonDbError") || errorMessage.includes("database")) {
+      helpfulHint = "Vercel Postgres is not configured properly. Did you link the Neon database in Vercel Storage and add the POSTGRES_URL environment variable?";
+    }
+    
+    return res.status(500).json({ 
+      success: false, 
+      error: "Server error", 
+      details: errorMessage,
+      hint: helpfulHint || undefined
+    });
   }
 }
