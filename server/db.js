@@ -76,6 +76,20 @@ export function getUserById(id) {
   return row || null;
 }
 
+export function getAllNetworkUsers(currentUserId) {
+  const users = db.prepare(`
+    SELECT id, email, role, full_name, title, department, year, bio, linkedin_url, github_url 
+    FROM users 
+    WHERE id != ?
+  `).all(currentUserId);
+  
+  for (let u of users) {
+    const skills = db.prepare("SELECT s.name FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.user_id = ?").all(u.id);
+    u.skills = skills.map(s => s.name);
+  }
+  return users;
+}
+
 export function getUserSkills(userId) {
   const rows = db
     .prepare(
@@ -121,6 +135,117 @@ export function deleteUserSkill(userId, skillName) {
     .prepare("DELETE FROM user_skills WHERE user_id = ? AND skill_id = ?")
     .run(userId, skill.id);
   return { success: result.changes > 0 };
+}
+
+// User Registration
+export function createUser(userData) {
+  const existing = db.prepare("SELECT email FROM users WHERE email = ?").get(userData.email);
+  if (existing) {
+    throw new Error("Email already registered");
+  }
+  
+  const id = randomUUID();
+  const salt = bcrypt.genSaltSync(10);
+  const passwordHash = bcrypt.hashSync(userData.password, salt);
+  
+  db.prepare(`
+    INSERT INTO users (id, email, password_hash, role, full_name, department, year) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id, 
+    userData.email, 
+    passwordHash, 
+    userData.role, 
+    userData.full_name, 
+    userData.department || null, 
+    userData.year || null
+  );
+  
+  return { id, email: userData.email, role: userData.role, name: userData.full_name };
+}
+
+// Profile Updates
+export function updateUserProfile(userId, profileData) {
+  const { title, bio, linkedin_url, github_url } = profileData;
+  db.prepare(`
+    UPDATE users 
+    SET title = COALESCE(?, title), 
+        bio = COALESCE(?, bio), 
+        linkedin_url = COALESCE(?, linkedin_url), 
+        github_url = COALESCE(?, github_url),
+        updated_at = datetime('now')
+    WHERE id = ?
+  `).run(title, bio, linkedin_url, github_url, userId);
+  return { success: true };
+}
+
+// Connections
+export function createConnectionRequest(requesterId, receiverId) {
+  if (requesterId === receiverId) throw new Error("Cannot connect with yourself");
+  
+  const existing = db.prepare(`
+    SELECT id FROM connections 
+    WHERE (requester_id = ? AND receiver_id = ?) OR (requester_id = ? AND receiver_id = ?)
+  `).get(requesterId, receiverId, receiverId, requesterId);
+  
+  if (existing) throw new Error("Connection or request already exists");
+
+  const id = randomUUID();
+  db.prepare(`
+    INSERT INTO connections (id, requester_id, receiver_id, status)
+    VALUES (?, ?, ?, 'pending')
+  `).run(id, requesterId, receiverId);
+  return { success: true, id };
+}
+
+export function updateConnectionStatus(connectionId, status) {
+  db.prepare("UPDATE connections SET status = ? WHERE id = ?").run(status, connectionId);
+  return { success: true };
+}
+
+export function getUserConnections(userId) {
+  return db.prepare(`
+    SELECT c.id as connection_id, c.status,
+           CASE WHEN c.requester_id = ? THEN u2.id ELSE u1.id END as connected_user_id,
+           CASE WHEN c.requester_id = ? THEN u2.full_name ELSE u1.full_name END as name,
+           CASE WHEN c.requester_id = ? THEN u2.role ELSE u1.role END as role,
+           CASE WHEN c.requester_id = ? THEN 'sent' ELSE 'received' END as request_type
+    FROM connections c
+    LEFT JOIN users u1 ON c.requester_id = u1.id
+    LEFT JOIN users u2 ON c.receiver_id = u2.id
+    WHERE c.requester_id = ? OR c.receiver_id = ?
+  `).all(userId, userId, userId, userId, userId, userId);
+}
+
+// Projects
+export function createProject(ownerId, projectData) {
+  const id = randomUUID();
+  db.prepare(`
+    INSERT INTO projects (id, title, description, github_repo_url, owner_id)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(id, projectData.title, projectData.description, projectData.github_repo_url, ownerId);
+  return { success: true, id };
+}
+
+export function getProjects() {
+  return db.prepare(`
+    SELECT p.*, u.full_name as owner_name, u.role as owner_role
+    FROM projects p
+    LEFT JOIN users u ON p.owner_id = u.id
+    ORDER BY p.created_at DESC
+  `).all();
+}
+
+export function applyForProject(applicantId, projectId, applicationData) {
+  const existing = db.prepare("SELECT id FROM project_applications WHERE project_id = ? AND applicant_id = ?").get(projectId, applicantId);
+  if (existing) throw new Error("Already applied for this project");
+
+  const id = randomUUID();
+  db.prepare(`
+    INSERT INTO project_applications (id, project_id, applicant_id, message, github_link)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(id, projectId, applicantId, applicationData.message, applicationData.github_link);
+  return { success: true, id };
 }
 
 export default db;

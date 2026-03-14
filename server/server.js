@@ -4,13 +4,26 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import {
   getUserByEmail,
   verifyPassword,
   getUserSkills,
   addUserSkill,
   deleteUserSkill,
+  createUser,
+  updateUserProfile,
+  createConnectionRequest,
+  updateConnectionStatus,
+  getUserConnections,
+  createProject,
+  getProjects,
+  applyForProject,
+  getAllNetworkUsers
 } from "./db.js";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key_here";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -52,7 +65,50 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(staticDir, "index.html"));
 });
 
+// Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).json({ success: false, error: "Access denied" });
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ success: false, error: "Invalid token" });
+    req.user = user;
+    next();
+  });
+}
+
 // ---------- Database API ----------
+
+// Register
+app.post("/api/register", (req, res) => {
+  try {
+    const { name, email, password, role, department } = req.body;
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ success: false, error: "Missing required fields." });
+    }
+    
+    try {
+      const newUser = createUser({ full_name: name, email, password, role, department });
+      const token = jwt.sign({ id: newUser.id, email: newUser.email, role: newUser.role }, JWT_SECRET, { expiresIn: '24h' });
+      
+      res.json({
+        success: true,
+        token,
+        user: newUser
+      });
+    } catch (e) {
+      if (e.message === "Email already registered") {
+         return res.status(400).json({ success: false, error: e.message });
+      }
+      throw e;
+    }
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ success: false, error: "Server error." });
+  }
+});
 
 // Login
 app.post("/api/login", (req, res) => {
@@ -74,14 +130,22 @@ app.post("/api/login", (req, res) => {
         error: `Please log in as ${user.role}. You selected ${role}.`,
       });
     }
+
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
+
     res.json({
       success: true,
+      token,
       user: {
         id: user.id,
         email: user.email,
         name: user.full_name,
         title: user.title || "",
         role: user.role,
+        department: user.department || "",
+        bio: user.bio || "",
+        linkedin_url: user.linkedin_url || "",
+        github_url: user.github_url || ""
       },
     });
   } catch (err) {
@@ -89,6 +153,116 @@ app.post("/api/login", (req, res) => {
     res.status(500).json({ success: false, error: "Server error." });
   }
 });
+
+// --- OAuth Routes ---
+const oauthStates = new Map();
+
+// GitHub OAuth
+app.get("/api/auth/github", authenticateToken, (req, res) => {
+  const state = crypto.randomBytes(16).toString("hex");
+  oauthStates.set(state, req.user.id);
+  
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  if (!clientId) return res.status(500).json({ success: false, error: "Missing GITHUB_CLIENT_ID in .env" });
+  
+  const redirectUri = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/github/callback`;
+  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=read:user`;
+  
+  res.json({ success: true, url });
+});
+
+app.get("/api/auth/github/callback", async (req, res) => {
+  const { code, state } = req.query;
+  const userId = oauthStates.get(state);
+  
+  if (!userId) {
+     return res.status(400).send("Invalid or expired OAuth state. Please try connecting again.");
+  }
+  oauthStates.delete(state);
+
+  try {
+     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
+        method: "POST",
+        headers: {
+           "Content-Type": "application/json",
+           "Accept": "application/json"
+        },
+        body: JSON.stringify({
+           client_id: process.env.GITHUB_CLIENT_ID,
+           client_secret: process.env.GITHUB_CLIENT_SECRET,
+           code,
+           redirect_uri: `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/github/callback`
+        })
+     });
+     
+     const tokenData = await tokenRes.json();
+     if (tokenData.error) throw new Error(tokenData.error_description);
+
+     const userRes = await fetch("https://api.github.com/user", {
+        headers: { "Authorization": `Bearer ${tokenData.access_token}` }
+     });
+     const githubUser = await userRes.json();
+     
+     updateUserProfile(userId, { github_url: githubUser.html_url });
+     res.redirect('/?oauth_success=github');
+  } catch (err) {
+     console.error("GitHub OAuth error:", err);
+     res.status(500).send("Failed to authenticate with GitHub");
+  }
+});
+
+// LinkedIn OAuth
+app.get("/api/auth/linkedin", authenticateToken, (req, res) => {
+  const state = crypto.randomBytes(16).toString("hex");
+  oauthStates.set(state, req.user.id);
+  
+  const clientId = process.env.LINKEDIN_CLIENT_ID;
+  if (!clientId) return res.status(500).json({ success: false, error: "Missing LINKEDIN_CLIENT_ID in .env" });
+  
+  const redirectUri = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/linkedin/callback`;
+  const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=openid%20profile%20email`;
+  
+  res.json({ success: true, url });
+});
+
+app.get("/api/auth/linkedin/callback", async (req, res) => {
+  const { code, state } = req.query;
+  const userId = oauthStates.get(state);
+  
+  if (!userId) {
+     return res.status(400).send("Invalid or expired OAuth state. Please try connecting again.");
+  }
+  oauthStates.delete(state);
+
+  try {
+     const tokenRes = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+           grant_type: "authorization_code",
+           code,
+           redirect_uri: `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/linkedin/callback`,
+           client_id: process.env.LINKEDIN_CLIENT_ID,
+           client_secret: process.env.LINKEDIN_CLIENT_SECRET
+        })
+     });
+     
+     const tokenData = await tokenRes.json();
+     if (tokenData.error) throw new Error(tokenData.error_description);
+
+     const userRes = await fetch("https://api.linkedin.com/v2/userinfo", {
+        headers: { "Authorization": `Bearer ${tokenData.access_token}` }
+     });
+     const liUser = await userRes.json();
+     
+     updateUserProfile(userId, { linkedin_url: `https://linkedin.com/in/connected-${liUser.sub}` });
+     res.redirect('/?oauth_success=linkedin');
+  } catch (err) {
+     console.error("LinkedIn OAuth error:", err);
+     res.status(500).send("Failed to authenticate with LinkedIn");
+  }
+});
+
 
 // Get user skills
 app.get("/api/user/:id/skills", (req, res) => {
@@ -119,9 +293,10 @@ app.post("/api/user/:id/skills", (req, res) => {
 });
 
 // Delete user skill (by skill name)
-app.delete("/api/user/:id/skills/:skillName", (req, res) => {
+app.delete("/api/user/:id/skills/:skillName", authenticateToken, (req, res) => {
   try {
     const { id, skillName } = req.params;
+    if (req.user.id !== id) return res.status(403).json({ success: false, error: "Unauthorized" });
     const decodedName = decodeURIComponent(skillName);
     const result = deleteUserSkill(id, decodedName);
     if (!result.success) {
@@ -131,6 +306,101 @@ app.delete("/api/user/:id/skills/:skillName", (req, res) => {
   } catch (err) {
     console.error("Delete skill error:", err);
     res.status(500).json({ success: false, error: "Server error." });
+  }
+});
+
+// Profile Update
+app.put("/api/user/:id/profile", authenticateToken, (req, res) => {
+  try {
+    const { id } = req.params;
+    if (req.user.id !== id) return res.status(403).json({ success: false, error: "Unauthorized" });
+    
+    updateUserProfile(id, req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ success: false, error: "Server error." });
+  }
+});
+
+// Connections
+app.get("/api/connections", authenticateToken, (req, res) => {
+  try {
+    const connections = getUserConnections(req.user.id);
+    res.json({ success: true, connections });
+  } catch (err) {
+    console.error("Get connections error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.post("/api/connections/request", authenticateToken, (req, res) => {
+  try {
+    const { receiverId } = req.body;
+    if (!receiverId) return res.status(400).json({ success: false, error: "receiverId required" });
+    
+    const result = createConnectionRequest(req.user.id, receiverId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.put("/api/connections/:id", authenticateToken, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!['accepted', 'declined'].includes(status)) {
+      return res.status(400).json({ success: false, error: "Invalid status" });
+    }
+    const result = updateConnectionStatus(id, status);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// Network Users
+app.get("/api/users", authenticateToken, (req, res) => {
+  try {
+    const users = getAllNetworkUsers(req.user.id);
+    res.json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// Projects
+app.get("/api/projects", authenticateToken, (req, res) => {
+  try {
+    const projects = getProjects();
+    res.json({ success: true, projects });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.post("/api/projects", authenticateToken, (req, res) => {
+  try {
+    const projectData = req.body;
+    if (!projectData.title || !projectData.description) {
+      return res.status(400).json({ success: false, error: "Title and description required" });
+    }
+    const result = createProject(req.user.id, projectData);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.post("/api/projects/:id/apply", authenticateToken, (req, res) => {
+  try {
+    const { id } = req.params;
+    const applicationData = req.body;
+    const result = applyForProject(req.user.id, id, applicationData);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
   }
 });
 

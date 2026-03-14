@@ -10,6 +10,7 @@
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
+    "jsonwebtoken": "^9.0.3",
     "path-to-regexp": "^6.2.2"
   },
   "scripts": {

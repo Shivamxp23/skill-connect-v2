@@ -43,23 +43,46 @@
                     <i class="fas fa-code-branch"></i>
                 </div>
                 <h1 class="login-title">Welcome to SkillConnect</h1>
-                <p class="login-subtitle">Select your role to continue</p>
+                <p class="login-subtitle">Connect, Collaborate, and Grow</p>
+
+                <div class="auth-tabs" style="display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
+                    <button class="auth-tab-btn active" id="tab-login" style="flex: 1; padding: 10px; background: none; border: none; border-bottom: 2px solid var(--primary); color: var(--primary); font-weight: 600; cursor: pointer;">Log In</button>
+                    <button class="auth-tab-btn" id="tab-register" style="flex: 1; padding: 10px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray); font-weight: 600; cursor: pointer;">Sign Up</button>
+                </div>
 
                 <div class="role-selector">
                     <button class="role-btn active" data-role="student">Student</button>
                     <button class="role-btn" data-role="faculty">Faculty</button>
                 </div>
 
-                <div class="form-group">
-                    <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email">
+                <!-- Registration specific fields -->
+                <div id="register-fields" style="display: none;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="registerName" placeholder="Full Name">
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="registerDepartment">
+                            <option value="">Select Department (Optional)</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Data Science">Data Science</option>
+                            <option value="Design">Design</option>
+                            <option value="Business">Business</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-bottom: 20px;" id="submitLogin">Log
-                    In</button>
 
-                <div style="text-align: center;">
+                <div class="form-group">
+                    <input type="email" class="form-control" id="authEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" id="authPassword" placeholder="Enter your password">
+                </div>
+                <!-- Action Buttons -->
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 20px;" id="submitLogin">Log In</button>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 20px; display: none;" id="submitRegister">Sign Up</button>
+
+                <!-- Demo accounts info -->
+                <div id="demo-accounts-info" style="text-align: center;">
                     <p>Demo Accounts:</p>
                     <p><strong>Student:</strong> student@skillconnect.edu / password</p>
                     <p><strong>faculty:</strong> faculty@skillconnect.edu / password</p>
@@ -172,10 +195,33 @@
                                 </div>
                                 <div style="font-size: 0.9rem; margin-top: 5px;">Code Quality: 85%</div>
                             </div>
+                        <div id="studentGithubStatus" style="text-align: center; margin: 10px 0; font-size: 0.9rem; color: var(--gray);">
+                            Analysis based on connected repositories.
                         </div>
                         <button class="btn btn-primary" style="width: 100%; margin-top: 10px;"
                             id="connectStudentGithubBtn">
                             <i class="fab fa-github"></i> Connect GitHub
+                        </button>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 10px; display: none;"
+                            id="viewStudentGithubBtn">
+                            <i class="fab fa-github"></i> View GitHub
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">LinkedIn Profile</div>
+                        </div>
+                        <div id="studentLinkedinStatus" style="text-align: center; margin: 15px 0; font-size: 0.9rem; color: var(--gray);">
+                            No LinkedIn account connected.
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;"
+                            id="connectStudentLinkedinBtn">
+                            <i class="fab fa-linkedin"></i> Connect LinkedIn
+                        </button>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 10px; display: none;"
+                            id="viewStudentLinkedinBtn">
+                            <i class="fab fa-linkedin"></i> View LinkedIn
                         </button>
                     </div>
                 </div>
@@ -575,61 +621,21 @@
 
                         <div class="connection-requests">
                             <!-- Incoming Requests -->
-                            <div class="request-section">
+                            <div class="request-section" id="incoming-requests-container">
                                 <h4 style="margin-bottom: 15px; color: var(--dark);">Incoming</h4>
-                                <div class="request-item">
-                                    <div class="post-header">
-                                        <div class="post-avatar">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <div class="post-user">Janak Parmar</div>
-                                            <div class="post-time">Computer Science</div>
-                                        </div>
-                                    </div>
-                                    <div class="request-actions">
-                                        <button class="btn btn-primary btn-small" onclick="acceptRequest(this)"><i
-                                                class="fas fa-check"></i></button>
-                                        <button class="btn btn-outline btn-small" onclick="declineRequest(this)"><i
-                                                class="fas fa-times"></i></button>
-                                    </div>
-                                </div>
-                                <div class="request-item">
-                                    <div class="post-header">
-                                        <div class="post-avatar">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <div class="post-user">Garvi Shah</div>
-                                            <div class="post-time">Data Science</div>
-                                        </div>
-                                    </div>
-                                    <div class="request-actions">
-                                        <button class="btn btn-primary btn-small" onclick="acceptRequest(this)"><i
-                                                class="fas fa-check"></i></button>
-                                        <button class="btn btn-outline btn-small" onclick="declineRequest(this)"><i
-                                                class="fas fa-times"></i></button>
-                                    </div>
-                                </div>
+                                <!-- dynamically populated -->
                             </div>
 
                             <!-- Sent Requests -->
-                            <div class="request-section" style="margin-top: 20px;">
+                            <div class="request-section" style="margin-top: 20px;" id="sent-requests-container">
                                 <h4 style="margin-bottom: 15px; color: var(--dark);">Sent</h4>
-                                <div class="request-item">
-                                    <div class="post-header">
-                                        <div class="post-avatar">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <div class="post-user">Ms. Prachi Rajput</div>
-                                            <div class="post-time">Faculty - AI Research</div>
-                                        </div>
-                                    </div>
-                                    <div class="request-status">
-                                        <span style="color: var(--gray); font-size: 0.8rem;">Pending</span>
-                                    </div>
-                                </div>
+                                <!-- dynamically populated -->
+                            </div>
+                            
+                            <!-- My Connections -->
+                            <div class="request-section" style="margin-top: 20px;" id="my-connections-container">
+                                <h4 style="margin-bottom: 15px; color: var(--dark);">My Connections</h4>
+                                <!-- dynamically populated -->
                             </div>
                         </div>
                     </div>
@@ -1154,6 +1160,46 @@
                                 <p style="color: var(--gray); font-size: 0.9rem;">Data analysis, visualization, and machine learning applications.</p>
                                 <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Page -->
+    <div class="page" id="projects-page">
+        <div class="container projects-page">
+            <div class="page-header">
+                <h1 style="margin-bottom: 10px; color: var(--primary);">Projects Collaboration</h1>
+                <p style="color: var(--gray); margin-bottom: 30px;">Find projects to team up on, or share your own to find members.</p>
+            </div>
+            
+            <div class="main-content">
+                <!-- Left: Projects Feed -->
+                <div class="center-feed">
+                    <div id="projects-feed">
+                        <!-- dynamically populated -->
+                        <div style="text-align: center; color: var(--gray); padding: 20px;">Loading projects...</div>
+                    </div>
+                </div>
+                
+                <!-- Right: Upload Project -->
+                <div class="right-sidebar">
+                    <div class="card project-upload">
+                        <h3 style="margin-bottom: 15px;">Post a Project</h3>
+                        <div class="project-form">
+                            <input type="text" class="form-control" id="newProjectTitle" placeholder="Project Title">
+                            <textarea class="form-control" id="newProjectDesc" rows="3" placeholder="Describe the project and what kind of collaborators you need."></textarea>
+                            <input type="text" class="form-control" id="newProjectTags" placeholder="Tags (comma separated, e.g. React, Node.js)">
+                            <button class="btn btn-primary" id="postProjectBtn" style="width: 100%; margin-top: 10px;"><i class="fas fa-upload"></i> Post Project</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-top: 20px;">
+                        <h3 style="margin-bottom: 15px;">My Applications</h3>
+                        <div id="my-project-applications" style="color: var(--gray); font-size: 0.9rem;">
+                            No applications sent yet.
                         </div>
                     </div>
                 </div>

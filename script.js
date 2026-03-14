@@ -6,13 +6,32 @@ let joinedClubs = [];
 let skillContext = 'student'; // or 'faculty'
 
 // DOM Elements
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
 const loginBtn = document.getElementById('submitLogin');
+const registerBtn = document.getElementById('submitRegister');
+const registerFields = document.getElementById('register-fields');
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
 const logoutBtn = document.getElementById('logoutBtn');
 const roleBtns = document.querySelectorAll('.role-btn');
 const navLinks = document.querySelectorAll('.nav-link');
 const pages = document.querySelectorAll('.page');
 const mainHeader = document.getElementById('main-header');
 const mainFooter = document.getElementById('main-footer');
+const registerName = document.getElementById('registerName');
+const registerDepartment = document.getElementById('registerDepartment');
+const demoAccountsInfo = document.getElementById('demo-accounts-info');
+
+// API fetch wrapper to automatically add JWT
+async function authFetch(url, options = {}) {
+    const token = localStorage.getItem('skillconnect_token');
+    const headers = { ...options.headers };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return fetch(url, { ...options, headers });
+}
 
 // API base URL (same origin when served by server)
 const API_BASE = window.location.origin || 'http://localhost:3000';
@@ -126,6 +145,124 @@ function createSkillModal() {
 
         document.getElementById('skillName').addEventListener('input', updateSkillPreview);
         document.getElementById('skillLevel').addEventListener('change', updateSkillPreview);
+    }
+}
+
+// Profile Edit Modal
+function createProfileModal() {
+    const modalHTML = `
+        <div class="modal-overlay" id="profileModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Profile</h3>
+                    <button class="modal-close" id="closeProfileModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="profileTitle">Headline / Title</label>
+                        <input type="text" class="form-control" id="profileTitle" placeholder="E.g. Computer Science Student">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileBio">Bio</label>
+                        <textarea class="form-control" id="profileBio" rows="3" placeholder="Tell us about yourself"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileLinkedin">LinkedIn URL</label>
+                        <input type="url" class="form-control" id="profileLinkedin" placeholder="https://linkedin.com/in/username">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileGithub">GitHub URL</label>
+                        <input type="url" class="form-control" id="profileGithub" placeholder="https://github.com/username">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelProfileBtn">Cancel</button>
+                    <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (!document.getElementById('profileModal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.getElementById('closeProfileModal').addEventListener('click', () => document.getElementById('profileModal').style.display = 'none');
+        document.getElementById('cancelProfileBtn').addEventListener('click', () => document.getElementById('profileModal').style.display = 'none');
+        document.getElementById('saveProfileBtn').addEventListener('click', saveProfileChanges);
+    }
+}
+
+function openProfileModal() {
+    if (!currentUser) return;
+    document.getElementById('profileTitle').value = currentUser.title || '';
+    document.getElementById('profileBio').value = currentUser.bio || '';
+    document.getElementById('profileLinkedin').value = currentUser.linkedin_url || '';
+    document.getElementById('profileGithub').value = currentUser.github_url || '';
+    document.getElementById('profileModal').style.display = 'flex';
+}
+
+async function saveProfileChanges() {
+    if (!currentUser) return;
+    const title = document.getElementById('profileTitle').value.trim();
+    const bio = document.getElementById('profileBio').value.trim();
+    const linkedin_url = document.getElementById('profileLinkedin').value.trim();
+    const github_url = document.getElementById('profileGithub').value.trim();
+
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/${currentUser.id}/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, bio, linkedin_url, github_url })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            currentUser.title = title;
+            currentUser.bio = bio;
+            currentUser.linkedin_url = linkedin_url;
+            currentUser.github_url = github_url;
+            
+            // update UI
+            const cfg = ROLE_CONFIG[currentUser.role];
+            if (cfg) document.getElementById(cfg.titleId).textContent = currentUser.title;
+            
+            updateProfileLinksUI(currentUser);
+
+            document.getElementById('profileModal').style.display = 'none';
+            showNotification('Profile updated successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Failed to update profile', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showNotification('Network error while saving profile.', 'error');
+    }
+}
+
+function updateProfileLinksUI(user) {
+    if (user.role === 'student') {
+        const liStatus = document.getElementById('studentLinkedinStatus');
+        const liBtnC = document.getElementById('connectStudentLinkedinBtn');
+        const liBtnV = document.getElementById('viewStudentLinkedinBtn');
+        if (user.linkedin_url && liStatus) {
+            liStatus.innerHTML = '<span style="color: var(--primary);"><i class="fas fa-check-circle"></i> Connected</span>';
+            if (liBtnC) liBtnC.style.display = 'none';
+            if (liBtnV) {
+                liBtnV.style.display = 'block';
+                liBtnV.onclick = () => window.open(user.linkedin_url, '_blank');
+            }
+        }
+        
+        const ghStatus = document.getElementById('studentGithubStatus');
+        const ghBtnC = document.getElementById('connectStudentGithubBtn');
+        const ghBtnV = document.getElementById('viewStudentGithubBtn');
+        if (user.github_url && ghStatus) {
+            ghStatus.innerHTML = '<span style="color: var(--primary);"><i class="fas fa-check-circle"></i> Connected</span>';
+            if (ghBtnC) ghBtnC.style.display = 'none';
+            if (ghBtnV) {
+                ghBtnV.style.display = 'block';
+                ghBtnV.onclick = () => window.open(user.github_url, '_blank');
+            }
+        }
     }
 }
 
@@ -358,15 +495,218 @@ function initializeMentorshipButtons() {
 }
 
 //initialize network page
-function initializeNetworkPage() {
-    initializeNetworkFilters();
-    initializeConnectButtons();
+async function initializeNetworkPage() {
+    const grid = document.querySelector('.profiles-grid');
+    if (!grid) return;
+
+    try {
+        const res = await authFetch(`${API_BASE}/api/users`);
+        const data = await res.json();
+        
+        if (data.success && data.users) {
+            grid.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const skillsArr = user.skills || [];
+                const skillsStr = skillsArr.map(s => s.toLowerCase()).join(',');
+                
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                card.setAttribute('data-id', user.id);
+                card.setAttribute('data-department', (user.department || '').toLowerCase());
+                card.setAttribute('data-role', user.role || '');
+                card.setAttribute('data-year', user.year || '');
+                card.setAttribute('data-skills', skillsStr);
+                
+                const skillsTags = skillsArr.map(s => `<span class="skill-tag">${s}</span>`).join('');
+                
+                let titleStr = user.title || '';
+                if (user.role === 'student' && user.department && user.year) {
+                    titleStr = `${titleStr} ${user.department} - ${user.year} Year`;
+                }
+                
+                card.innerHTML = `
+                    <div class="profile-avatar"><i class="fas fa-user-tie"></i></div>
+                    <div class="profile-name">${user.full_name}</div>
+                    <div class="profile-title">${titleStr}</div>
+                    <div class="profile-skills">
+                        ${skillsTags}
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary connect-btn">Connect</button>
+                        <button class="btn btn-outline">View Profile</button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            // Re-bind click events for the new connect buttons
+            const connectBtns = grid.querySelectorAll('.connect-btn');
+            connectBtns.forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const parentCard = this.closest('.profile-card');
+                    const targetId = parentCard.getAttribute('data-id');
+                    const targetName = parentCard.querySelector('.profile-name').textContent;
+                    
+                    try {
+                        const creq = await authFetch(`${API_BASE}/api/connections/request`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ receiverId: targetId })
+                        });
+                        const cdata = await creq.json();
+                        
+                        if (cdata.success) {
+                            this.innerHTML = '<i class="fas fa-check"></i> Request Sent';
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-outline');
+                            this.disabled = true;
+                            showNotification(`Connection request sent to ${targetName}`, 'success');
+                        } else {
+                            showNotification(cdata.error || 'Failed to send request', 'error');
+                        }
+                    } catch (e) {
+                        showNotification('Network error sending request', 'error');
+                    }
+                });
+            });
+            
+            // Re-initialize filters now that nodes exist
+            initializeNetworkFilters();
+        }
+    } catch(e) {
+        console.error("Network fetching failed", e);
+    }
     initializeMentorshipButtons();
+    fetchConnections();
+}
+
+async function fetchConnections() {
+    const incContainer = document.getElementById('incoming-requests-container');
+    const sentContainer = document.getElementById('sent-requests-container');
+    const myContainer = document.getElementById('my-connections-container');
+    
+    if (!incContainer || !sentContainer || !myContainer) return;
+    
+    try {
+        const res = await authFetch(`${API_BASE}/api/connections`);
+        const data = await res.json();
+        
+        if (data.success && data.connections) {
+            // clear containers except headers
+            const clearTgt = (tgt) => {
+                Array.from(tgt.children).forEach(c => {
+                    if (c.tagName !== 'H4') c.remove();
+                });
+            };
+            clearTgt(incContainer); clearTgt(sentContainer); clearTgt(myContainer);
+            
+            data.connections.forEach(conn => {
+                const isIncoming = conn.receiver_id === currentUser.id && conn.status === 'pending';
+                const isSent = conn.sender_id === currentUser.id && conn.status === 'pending';
+                const isMy = conn.status === 'accepted';
+                
+                const item = document.createElement('div');
+                item.className = 'request-item';
+                
+                let titleParts = [conn.department, conn.role].filter(Boolean).join(' - ');
+                if (!titleParts) titleParts = conn.title || '';
+                
+                item.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-avatar"><i class="fas fa-user"></i></div>
+                        <div>
+                            <div class="post-user">${conn.full_name}</div>
+                            <div class="post-time">${titleParts}</div>
+                        </div>
+                    </div>
+                `;
+                
+                if (isIncoming) {
+                    item.innerHTML += `
+                        <div class="request-actions">
+                            <button class="btn btn-primary btn-small conn-accept" data-id="${conn.id}"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline btn-small conn-decline" data-id="${conn.id}"><i class="fas fa-times"></i></button>
+                        </div>
+                    `;
+                    incContainer.appendChild(item);
+                } else if (isSent) {
+                    item.innerHTML += `
+                        <div class="request-status"><span style="color: var(--gray); font-size: 0.8rem;">Pending</span></div>
+                    `;
+                    sentContainer.appendChild(item);
+                } else if (isMy) {
+                    item.innerHTML += `
+                        <div class="request-status"><span style="color: var(--primary); font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Connected</span></div>
+                    `;
+                    myContainer.appendChild(item);
+                }
+            });
+            
+            document.querySelectorAll('.conn-accept').forEach(btn => btn.addEventListener('click', () => updateConnection(btn.getAttribute('data-id'), 'accepted')));
+            document.querySelectorAll('.conn-decline').forEach(btn => btn.addEventListener('click', () => updateConnection(btn.getAttribute('data-id'), 'declined')));
+        }
+    } catch(err) {
+        console.error("fetchConnections error", err);
+    }
+}
+
+async function updateConnection(id, status) {
+    try {
+        const res = await authFetch(`${API_BASE}/api/connections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showNotification(`Connection ${status}`, 'success');
+            fetchConnections(); // refresh lists
+        } else {
+            showNotification(data.error || 'Failed', 'error');
+        }
+    } catch(e) {
+        showNotification('Network error', 'error');
+    }
 }
 
 //navs + log in
-loginBtn.addEventListener('click', handleLogin);
+if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+if (registerBtn) registerBtn.addEventListener('click', handleRegister);
 logoutBtn.addEventListener('click', handleLogout);
+
+if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+        tabLogin.classList.add('active');
+        tabLogin.style.borderBottomColor = 'var(--primary)';
+        tabLogin.style.color = 'var(--primary)';
+        
+        tabRegister.classList.remove('active');
+        tabRegister.style.borderBottomColor = 'transparent';
+        tabRegister.style.color = 'var(--gray)';
+        
+        registerFields.style.display = 'none';
+        loginBtn.style.display = 'block';
+        registerBtn.style.display = 'none';
+        demoAccountsInfo.style.display = 'block';
+    });
+    
+    tabRegister.addEventListener('click', () => {
+        tabRegister.classList.add('active');
+        tabRegister.style.borderBottomColor = 'var(--primary)';
+        tabRegister.style.color = 'var(--primary)';
+        
+        tabLogin.classList.remove('active');
+        tabLogin.style.borderBottomColor = 'transparent';
+        tabLogin.style.color = 'var(--gray)';
+        
+        registerFields.style.display = 'block';
+        loginBtn.style.display = 'none';
+        registerBtn.style.display = 'block';
+        demoAccountsInfo.style.display = 'none';
+    });
+}
 
 roleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -421,6 +761,115 @@ function applyRoleBasedUI(role) {
     }
 }
 
+/* ---------------------- PROJECTS LOGIC ---------------------- */
+async function initializeProjectsPage() {
+    const feed = document.getElementById('projects-feed');
+    if (!feed) return;
+    
+    try {
+        const res = await authFetch(`${API_BASE}/api/projects`);
+        const data = await res.json();
+        
+        if (data.success && data.projects) {
+            feed.innerHTML = '';
+            if (data.projects.length === 0) {
+                feed.innerHTML = '<div style="text-align: center; color: var(--gray); padding: 20px;">No projects posted yet. Be the first!</div>';
+            }
+            
+            data.projects.forEach(proj => {
+                const card = document.createElement('div');
+                card.className = 'card post-card';
+                
+                let tagsHtml = '';
+                if (proj.tags) {
+                    const tags = proj.tags.split(',');
+                    tagsHtml = `<div class="skills-list" style="margin-top: 10px;">` + 
+                        tags.map(t => `<span class="skill-tag">${t.trim()}</span>`).join('') +
+                        `</div>`;
+                }
+                
+                card.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-avatar"><i class="fas fa-project-diagram"></i></div>
+                        <div>
+                            <div class="post-user">${proj.title}</div>
+                            <div class="post-time">Posted by ${proj.owner_name} • ${new Date(proj.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>${proj.description}</p>
+                        ${tagsHtml}
+                    </div>
+                    <div class="post-actions" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+                        <button class="btn btn-primary btn-small proj-apply-btn" data-id="${proj.id}">Apply to Collaborate</button>
+                    </div>
+                `;
+                
+                feed.appendChild(card);
+            });
+            
+            document.querySelectorAll('.proj-apply-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const projectId = this.getAttribute('data-id');
+                    try {
+                        const res = await authFetch(`${API_BASE}/api/projects/${projectId}/apply`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ rolePlay: 'Collaborator', message: 'I am interested in collaborating!' })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            showNotification('Application sent!', 'success');
+                            this.innerHTML = '<i class="fas fa-check"></i> Applied';
+                            this.disabled = true;
+                            this.classList.replace('btn-primary', 'btn-outline');
+                        } else {
+                            showNotification(data.error || 'Failed to apply', 'error');
+                        }
+                    } catch (e) {
+                         showNotification('Network error', 'error');
+                    }
+                });
+            });
+        }
+    } catch(err) {
+        console.error("fetchProjects error", err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const postProjectBtn = document.getElementById('postProjectBtn');
+    if (postProjectBtn) {
+        postProjectBtn.addEventListener('click', async () => {
+            const title = document.getElementById('newProjectTitle').value;
+            const desc = document.getElementById('newProjectDesc').value;
+            const tags = document.getElementById('newProjectTags').value;
+            
+            if (!title || !desc) return showNotification('Title and Description required', 'error');
+            
+            try {
+                const res = await authFetch(`${API_BASE}/api/projects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description: desc, rolePlay: 'Collaborator', tags })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification('Project posted successfully!', 'success');
+                    document.getElementById('newProjectTitle').value = '';
+                    document.getElementById('newProjectDesc').value = '';
+                    document.getElementById('newProjectTags').value = '';
+                    initializeProjectsPage();
+                } else {
+                    showNotification(data.error || 'Failed', 'error');
+                }
+            } catch(e) {
+                showNotification('Network error', 'error');
+            }
+        });
+    }
+});
+
 /* ---------------------- PAGE SWITCHER ---------------------- */
 function showPage(pageId) {
     pages.forEach(page => page.classList.remove('active'));
@@ -458,7 +907,7 @@ function showPage(pageId) {
     }
 
     if (pageId === 'projects') {
-        setTimeout(pc_onProjectsPageShow, 150);
+        setTimeout(initializeProjectsPage, 150);
     }
 
     if (pageId === 'events') {
@@ -468,10 +917,10 @@ function showPage(pageId) {
 
 //login handle — uses SQL database via /api/login
 async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const pass = document.getElementById('loginPassword').value;
+    const email = authEmail.value.trim();
+    const pass = authPassword.value;
 
-    if (!email || !pass) return alert('Please fill in all fields');
+    if (!email || !pass) return showNotification('Please fill in all fields', 'error');
 
     try {
         const res = await fetch(`${API_BASE}/api/login`, {
@@ -482,24 +931,73 @@ async function handleLogin() {
         const data = await res.json();
 
         if (data.success && data.user) {
+            localStorage.setItem('skillconnect_token', data.token); // Save token
             currentUser = {
                 id: data.user.id,
                 email: data.user.email,
                 name: data.user.name,
                 title: data.user.title || '',
-                role: data.user.role
+                role: data.user.role,
+                department: data.user.department || '',
+                bio: data.user.bio || '',
+                linkedin_url: data.user.linkedin_url || '',
+                github_url: data.user.github_url || ''
             };
             showDashboard();
+            updateProfileLinksUI(currentUser);
             showNotification(`Welcome ${currentUser.name}!`, 'success');
             loadUserSkillsFromDb();
         } else {
-            alert(data.error || 'Invalid email or password.');
+            showNotification(data.error || 'Invalid email or password.', 'error');
         }
     } catch (err) {
         console.error('Login error:', err);
-        alert('Cannot reach server. Start the server and ensure the database is set up.');
+        showNotification('Cannot reach server. Start the server and ensure the database is set up.', 'error');
     }
 }
+
+//register handle
+async function handleRegister() {
+    const email = authEmail.value.trim();
+    const pass = authPassword.value;
+    const name = registerName.value.trim();
+    const department = registerDepartment.value;
+
+    if (!email || !pass || !name) return showNotification('Please fill in all required fields (Name, Email, Password)', 'error');
+
+    try {
+        const res = await fetch(`${API_BASE}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password: pass, role: currentRole, department })
+        });
+        const data = await res.json();
+
+        if (data.success && data.user) {
+            localStorage.setItem('skillconnect_token', data.token); // Save token
+            currentUser = {
+                id: data.user.id,
+                email: data.user.email,
+                name: data.user.name,
+                title: data.user.title || '',
+                role: data.user.role,
+                department: data.user.department || '',
+                bio: data.user.bio || '',
+                linkedin_url: data.user.linkedin_url || '',
+                github_url: data.user.github_url || ''
+            };
+            showDashboard();
+            showNotification(`Welcome to SkillConnect, ${currentUser.name}!`, 'success');
+            loadUserSkillsFromDb();
+        } else {
+            showNotification(data.error || 'Registration failed.', 'error');
+        }
+    } catch (err) {
+        console.error('Register error:', err);
+        showNotification('Cannot reach server.', 'error');
+    }
+}
+
 
 function showDashboard() {
     mainHeader.classList.remove('hidden');
@@ -524,6 +1022,19 @@ function showDashboard() {
     // Initialize LinkedIn buttons
     initializeLinkedInButtons();
     setTimeout(initializeLinkedInOnDashboardLoad, 150);
+    
+    // Profile Modal initialization
+    createProfileModal();
+    const editStudentBtn = document.getElementById('editStudentProfileBtn');
+    const editFacultyBtn = document.getElementById('editFacultyProfileBtn');
+    if (editStudentBtn && !editStudentBtn.hasAttribute('data-init')) {
+        editStudentBtn.setAttribute('data-init', 'true');
+        editStudentBtn.addEventListener('click', openProfileModal);
+    }
+    if (editFacultyBtn && !editFacultyBtn.hasAttribute('data-init')) {
+        editFacultyBtn.setAttribute('data-init', 'true');
+        editFacultyBtn.addEventListener('click', openProfileModal);
+    }
 }
 
 function handleLogout() {
@@ -534,8 +1045,10 @@ function handleLogout() {
     pages.forEach(p => p.classList.remove('active'));
     document.getElementById('login-page').classList.add('active');
 
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPassword').value = '';
+    document.getElementById('authEmail').value = '';
+    document.getElementById('authPassword').value = '';
+    if (registerName) registerName.value = '';
+    localStorage.removeItem('skillconnect_token');
     applyRoleBasedUI('student');
 }
 
@@ -676,7 +1189,7 @@ async function loadUserSkillsFromDb() {
     const listEl = document.getElementById(cfg.skillListId);
     if (!listEl) return;
     try {
-        const res = await fetch(`${API_BASE}/api/user/${currentUser.id}/skills`);
+        const res = await authFetch(`${API_BASE}/api/user/${currentUser.id}/skills`);
         const data = await res.json();
         if (!data.success || !data.skills || !data.skills.length) return;
         listEl.innerHTML = '';
@@ -829,9 +1342,45 @@ document.getElementById('editStudentProfileBtn')?.addEventListener('click', () =
     }
 });
 
-document.getElementById('connectStudentGithubBtn')?.addEventListener('click', () => {
-    alert('GitHub integration would be implemented here. For demo purposes, sample data is shown.');
+document.getElementById('connectStudentGithubBtn')?.addEventListener('click', async () => {
+    if (!currentUser) return showNotification('Please login first', 'error');
+    try {
+        const res = await authFetch(`${API_BASE}/api/auth/github`);
+        const data = await res.json();
+        if (data.success && data.url) {
+            window.location.href = data.url;
+        } else {
+            showNotification(data.error || 'Failed to initialize GitHub connection', 'error');
+        }
+    } catch (err) {
+        showNotification('Network error initializing OAuth', 'error');
+    }
 });
+
+document.getElementById('connectStudentLinkedinBtn')?.addEventListener('click', async () => {
+    if (!currentUser) return showNotification('Please login first', 'error');
+    try {
+        const res = await authFetch(`${API_BASE}/api/auth/linkedin`);
+        const data = await res.json();
+        if (data.success && data.url) {
+            window.location.href = data.url;
+        } else {
+            showNotification(data.error || 'Failed to initialize LinkedIn connection', 'error');
+        }
+    } catch (err) {
+        showNotification('Network error initializing OAuth', 'error');
+    }
+});
+
+// Check for OAuth redirect success on load
+const urlParams = new URLSearchParams(window.location.search);
+const oauthSuccess = urlParams.get('oauth_success');
+if (oauthSuccess) {
+    setTimeout(() => {
+        showNotification(`Successfully connected ${oauthSuccess === 'github' ? 'GitHub' : 'LinkedIn'} account!`, 'success');
+    }, 500);
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
 
 document.getElementById('exploreClubsBtn')?.addEventListener('click', () => {
     showPage('clubs');
