@@ -6,23 +6,28 @@
 }
 
 :root {
-    --primary: #8B5FBF;
-    --secondary: #6C4AB6;
-    --accent: #FF9E9E;
-    --light: #FFF5E4;
-    --dark: #3D3C42;
-    --success: #4A90E2;
-    --warning: #FFBD35;
-    --danger: #FF5D5D;
-    --gray: #9D9D9D;
-    --card-bg: #ffffff;
-    --border: #F0F0F0;
-    --warm-bg: #FFF9F0;
-    --admin-primary: #4A6FA5;
-    --student-primary: #4A90E2;
-    --button-primary: #4A6FA5;
-    --button-hover: #3A5F95;
-    --faculty-primary: #6C4AB6;
+    --primary: #000000;
+    --secondary: #333333;
+    --accent: #E0E0E0;
+    --light: #FFFFFF;
+    --dark: #000000;
+    --success: #000000;
+    --warning: #000000;
+    --danger: #000000;
+    --gray: #666666;
+    --card-bg: #FFFFFF;
+    --border: #000000;
+    --warm-bg: #F4F4F4;
+    --admin-primary: #000000;
+    --student-primary: #000000;
+    --button-primary: #000000;
+    --button-hover: #333333;
+    --faculty-primary: #000000;
+    
+    /* Neo-brutalist specific */
+    --brutal-border: 3px solid #000000;
+    --brutal-shadow: 4px 4px 0px #000000;
+    --brutal-shadow-hover: 2px 2px 0px #000000;
 }
 
 body {
@@ -41,10 +46,11 @@ body {
 /* Header Styles */
 header {
     background-color: white;
-    box-shadow: 0 2px 15px rgba(139, 95, 191, 0.1);
+    box-shadow: 0 2px 0px rgba(0, 0, 0, 1);
     position: sticky;
     top: 0;
     z-index: 1000;
+    border-bottom: var(--brutal-border);
 }
 
 .header-content {
@@ -59,12 +65,14 @@ header {
     align-items: center;
     gap: 10px;
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 800; /* Extra bold for brutalism */
     color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: -1px;
 }
 
 .logo i {
-    color: var(--accent);
+    color: var(--dark);
 }
 
 nav ul {
@@ -109,66 +117,43 @@ nav ul li a[data-page="skill-summary"].active {
 
 .btn {
     padding: 10px 20px;
-    border-radius: 30px;
-    border: none;
-    font-weight: 600;
+    border-radius: 0px; /* Sharp corners */
+    border: var(--brutal-border); /* Hard border */
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.1s ease; /* Snappy transitions */
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    background-color: var(--light);
+    color: var(--dark);
+    box-shadow: var(--brutal-shadow);
+    text-transform: uppercase;
 }
 
-.btn-primary {
-    background-color: var(--button-primary);
-    color: white;
+.btn-primary, .btn-admin, .btn-student, .btn-faculty {
+    background-color: var(--light);
+    color: var(--dark);
 }
 
-.btn-primary:hover {
-    background-color: var(--button-hover);
+.btn-primary:hover, .btn-admin:hover, .btn-student:hover, .btn-faculty:hover {
+    background-color: #f0f0f0;
 }
 
 .btn-outline {
     background-color: transparent;
-    border: 2px solid var(--button-primary);
-    color: var(--button-primary);
+    border: var(--brutal-border);
+    color: var(--dark);
 }
 
 .btn-outline:hover {
-    background-color: rgba(74, 111, 165, 0.1);
+    background-color: #e0e0e0;
 }
 
-.btn-admin {
-    background-color: var(--admin-primary);
-    color: white;
-}
-
-.btn-admin:hover {
-    background-color: #3A5F95;
-}
-
-.btn-student {
-    background-color: var(--student-primary);
-    color: white;
-}
-
-.btn-student:hover {
-    background-color: #3A80D2;
-}
-
-.btn-faculty {
-    background-color: var(--faculty-primary);
-    color: white;
-}
-
-.btn-faculty:hover {
-    background-color: #5B3A95;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.btn:active, .btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--brutal-shadow-hover);
 }
 
 /* Page Styles */
@@ -243,17 +228,17 @@ nav ul li a[data-page="skill-summary"].active {
 /* Card Styles */
 .card {
     background-color: var(--card-bg);
-    border-radius: 15px;
+    border-radius: 0px; /* Sharp corners */
     padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--brutal-shadow);
     margin-bottom: 20px;
-    border: 1px solid var(--border);
-    transition: transform 0.3s, box-shadow 0.3s;
+    border: var(--brutal-border);
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.1);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #000;
 }
 
 .card-header {
@@ -262,13 +247,14 @@ nav ul li a[data-page="skill-summary"].active {
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: var(--brutal-border);
 }
 
 .card-title {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 800;
     color: var(--dark);
+    text-transform: uppercase;
 }
 
 /* Profile Styles */
@@ -285,25 +271,26 @@ nav ul li a[data-page="skill-summary"].active {
     left: 0;
     width: 100%;
     height: 80px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="2" cy="2" r="2" fill="%23000"/></svg>'); /* dotted pattern instead of gradient */
+    border-bottom: var(--brutal-border);
     z-index: 0;
 }
 
 .profile-avatar {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 0%; /* blocky avatar */
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--dark);
     font-size: 2.5rem;
     margin: 0 auto 15px;
     position: relative;
     z-index: 1;
-    border: 4px solid white;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: var(--brutal-border);
+    box-shadow: var(--brutal-shadow);
 }
 
 .profile-name {
@@ -387,31 +374,35 @@ nav ul li a[data-page="skill-summary"].active {
 }
 
 .skill-tag {
-    background: linear-gradient(135deg, var(--button-primary), var(--student-primary));
-    color: white;
+    background: var(--light);
+    color: var(--dark);
     padding: 5px 12px;
-    border-radius: 20px;
+    border-radius: 0px;
     font-size: 0.9rem;
-    transition: all 0.3s;
+    font-weight: 700;
+    transition: all 0.1s;
     cursor: pointer;
-    box-shadow: 0 3px 10px rgba(74, 111, 165, 0.2);
+    border: 2px solid #000;
+    box-shadow: 2px 2px 0px #000;
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    text-transform: uppercase;
 }
 
 .skill-tag:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(74, 111, 165, 0.3);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px #000;
 }
 
 /* Skill Level Badges */
 .skill-level-badge {
-    background: rgba(255, 255, 255, 0.3);
+    background: #000;
+    color: #fff;
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: 0px;
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: 800;
 }
 
 /* Feed Styles */
@@ -429,13 +420,14 @@ nav ul li a[data-page="skill-summary"].active {
 .post-avatar {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 0%;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    box-shadow: 0 3px 10px rgba(139, 95, 191, 0.2);
+    color: var(--dark);
+    border: 2px solid #000;
+    box-shadow: 2px 2px 0px #000;
 }
 
 .post-user {
@@ -473,16 +465,18 @@ nav ul li a[data-page="skill-summary"].active {
 
 /* GitHub Analysis Styles */
 .repo-card {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: var(--light);
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 0px;
     margin-bottom: 15px;
-    transition: transform 0.3s;
-    border-left: 4px solid var(--primary);
+    transition: transform 0.1s;
+    border: var(--brutal-border);
+    box-shadow: var(--brutal-shadow);
 }
 
 .repo-card:hover {
-    transform: translateX(5px);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #000;
 }
 
 .repo-header {
@@ -504,17 +498,17 @@ nav ul li a[data-page="skill-summary"].active {
 }
 
 .progress-bar {
-    height: 8px;
-    background-color: #e9ecef;
-    border-radius: 4px;
+    height: 12px;
+    background-color: var(--light);
+    border: 2px solid #000;
+    border-radius: 0px;
     overflow: hidden;
     margin: 10px 0;
 }
 
 .progress {
     height: 100%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 4px;
+    background: #000;
     width: 0;
     transition: width 1.5s ease-in-out;
 }
@@ -529,16 +523,17 @@ nav ul li a[data-page="skill-summary"].active {
 }
 
 .event-date {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
+    background: #fff;
+    color: #000;
     width: 60px;
     height: 60px;
-    border-radius: 10px;
+    border-radius: 0px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 3px 10px rgba(139, 95, 191, 0.2);
+    border: 2px solid #000;
+    box-shadow: 3px 3px 0px #000;
 }
 
 .event-day {
@@ -573,17 +568,19 @@ nav ul li a[data-page="skill-summary"].active {
 .form-control {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: var(--brutal-border);
+    border-radius: 0px;
     font-size: 1rem;
-    transition: border-color 0.3s;
+    font-weight: 600;
+    transition: border-color 0.1s, box-shadow 0.1s;
     background-color: var(--light);
+    box-shadow: 2px 2px 0px #000;
 }
 
 .form-control:focus {
-    border-color: var(--primary);
+    border-color: #000;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(139, 95, 191, 0.1);
+    box-shadow: 4px 4px 0px #000;
 }
 
 /* Main Content Layout */
@@ -615,14 +612,15 @@ nav ul li a[data-page="skill-summary"].active {
 .club-icon {
     width: 80px;
     height: 80px;
-    border-radius: 15px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 0px;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--dark);
     font-size: 2rem;
-    box-shadow: 0 5px 15px rgba(139, 95, 191, 0.2);
+    border: 2px solid #000;
+    box-shadow: 4px 4px 0px #000;
 }
 
 .club-info {
@@ -649,13 +647,14 @@ nav ul li a[data-page="skill-summary"].active {
 .member-avatar {
     width: 30px;
     height: 30px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 0%;
+    background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 0.8rem;
+    border: 1px solid #000;
 }
 
 /* Admin Dashboard */
@@ -672,18 +671,19 @@ nav ul li a[data-page="skill-summary"].active {
 
 .stat-card {
     background: white;
-    border-radius: 15px;
+    border-radius: 0px;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: var(--brutal-border);
+    box-shadow: var(--brutal-shadow);
 }
 
 .stat-card.admin {
-    border-top: 4px solid var(--admin-primary);
+    border-top: 6px solid #000;
 }
 
 .stat-card.student {
-    border-top: 4px solid var(--student-primary);
+    border-top: 6px solid #000;
 }
 
 .stat-number {
@@ -716,10 +716,11 @@ nav ul li a[data-page="skill-summary"].active {
 
 /* Footer */
 footer {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    background: #000;
     color: white;
     padding: 40px 0 20px;
     margin-top: 50px;
+    border-top: var(--brutal-border);
 }
 
 .footer-content {
@@ -1623,9 +1624,7 @@ footer {
     min-height: 600px;
 }
 
-.events-page .right-sidebar {
-    /* Empty sidebar for layout balance */
-}
+
 
 /* LinkedIn Profile Preview */
 .linkedin-profile-preview {
