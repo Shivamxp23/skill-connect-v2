@@ -1,3 +1,27 @@
+# Dependencies
 node_modules/
+server/node_modules/
+
+# Environment variables (NEVER commit these)
 .env
+.env.local
+.env.production
+server/.env
+
+# Database files (SQLite — local dev only)
 *.db
+*.sqlite
+*.sqlite3
+
+# Vercel artifacts
+.vercel/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo

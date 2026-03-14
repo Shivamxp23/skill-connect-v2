@@ -1,0 +1,39 @@
+// api/projects.js — GET + POST /api/projects
+import { ensureSchema, getProjects, createProject } from "./_db.js";
+import { requireAuth } from "./_auth.js";
+
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.status(200).end();
+
+  const user = requireAuth(req, res);
+  if (!user) return;
+
+  await ensureSchema();
+
+  if (req.method === "GET") {
+    try {
+      const projects = await getProjects();
+      return res.json({ success: true, projects });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: "Server error" });
+    }
+  }
+
+  if (req.method === "POST") {
+    try {
+      const projectData = req.body;
+      if (!projectData.title || !projectData.description) {
+        return res.status(400).json({ success: false, error: "Title and description required" });
+      }
+      const result = await createProject(user.id, projectData);
+      return res.json(result);
+    } catch (err) {
+      return res.status(500).json({ success: false, error: "Server error" });
+    }
+  }
+
+  res.status(405).json({ success: false, error: "Method not allowed" });
+}

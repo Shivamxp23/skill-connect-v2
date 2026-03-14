@@ -2,8 +2,17 @@
   "name": "skill-connect",
   "version": "1.0.0",
   "private": true,
-  "description": "SkillConnect - run the full app with one command",
+  "description": "SkillConnect — a student networking and collaboration platform",
+  "type": "module",
   "scripts": {
-    "start": "cd server && node server.js"
+    "dev": "node server/server.js",
+    "start": "node server/server.js",
+    "vercel-build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "latest",
+    "@vercel/postgres": "^0.10.0",
+    "bcryptjs": "latest",
+    "jsonwebtoken": "^9.0.3"
   }
 }

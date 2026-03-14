@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/user/:id/skills/:skillName", "destination": "/api/user/[id]/skills/[skillName]" },
+    { "source": "/api/user/:id/skills",            "destination": "/api/user/[id]/skills" },
+    { "source": "/api/user/:id/profile",           "destination": "/api/user/[id]/profile" },
+    { "source": "/api/user/:id/stats",             "destination": "/api/user/[id]/stats" },
+    { "source": "/api/user/:id/projects",          "destination": "/api/user/[id]/projects" },
+    { "source": "/api/connections/request",        "destination": "/api/connections" },
+    { "source": "/api/connections/:id",            "destination": "/api/connections/[id]" },
+    { "source": "/api/projects/:projectId/applications/:appId", "destination": "/api/projects/[projectId]/applications/[appId]" },
+    { "source": "/api/projects/:id/apply",         "destination": "/api/projects/[id]" },
+    { "source": "/api/projects/:id/applications",  "destination": "/api/projects/[id]" },
+    { "source": "/api/clubs/:id/join",             "destination": "/api/clubs/[id]/join" },
+    { "source": "/api/clubs/:id/leave",            "destination": "/api/clubs/[id]/leave" },
+    { "source": "/api/events/:id/register",        "destination": "/api/events/[id]/register" },
+    { "source": "/api/events/:id/unregister",      "destination": "/api/events/[id]/unregister" },
+    { "source": "/ai/skills",                      "destination": "/api/ai/skills" },
+    { "source": "/ai/analyse-collab",              "destination": "/api/ai/analyse-collab" },
+    { "source": "/(.*)",                           "destination": "/index.html" }
+  ]
+}
