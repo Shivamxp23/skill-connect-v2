@@ -979,11 +979,12 @@ async function handleLogin() {
             showNotification(`Welcome ${currentUser.name}!`, 'success');
             loadUserSkillsFromDb();
         } else {
-            showNotification(data.error || 'Invalid email or password.', 'error');
+            const errorMsg = data.hint || data.details || data.error || 'Invalid email or password.';
+            showNotification(errorMsg, 'error');
         }
     } catch (err) {
         console.error('Login error:', err);
-        showNotification('Cannot reach server. Start the server and ensure the database is set up.', 'error');
+        showNotification('Cannot reach API. Ensure Vercel Postgres is set up.', 'error');
     }
 }
 
