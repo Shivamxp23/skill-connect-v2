@@ -980,6 +980,15 @@ footer {
     box-shadow: 0 5px 15px rgba(255, 93, 93, 0.3);
 }
 
+.left-sidebar, .right-sidebar {
+    position: sticky;
+    top: 90px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 /* Notifications */
 .notification {
     position: fixed;
@@ -1699,3 +1708,36 @@ footer {
     color: var(--gray);
 }
 
+/* --- Layout Grids for specific pages --- */
+.student-dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.profile-page-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+}
+
+/* --- Mobile / Tablet Responsiveness --- */
+@media (max-width: 992px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .student-dashboard-grid, .profile-page-grid {
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .left-sidebar, .right-sidebar {
+        position: relative;
+        top: 0;
+        width: 100%;
+    }
+}

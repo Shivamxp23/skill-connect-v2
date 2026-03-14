@@ -20,7 +20,19 @@ import {
   createProject,
   getProjects,
   applyForProject,
-  getAllNetworkUsers
+  getAllNetworkUsers,
+  getProjectApplications,
+  updateProjectApplicationStatus,
+  getUserProjects,
+  getClubs,
+  createClub,
+  joinClub,
+  leaveClub,
+  getEvents,
+  createEvent,
+  registerForEvent,
+  unregisterFromEvent,
+  getUserStats
 } from "./db.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key_here";
@@ -401,6 +413,128 @@ app.post("/api/projects/:id/apply", authenticateToken, (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/api/projects/:id/applications", authenticateToken, (req, res) => {
+  try {
+    const apps = getProjectApplications(req.params.id);
+    res.json({ success: true, applications: apps });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.put("/api/projects/:projectId/applications/:appId", authenticateToken, (req, res) => {
+  try {
+    const { appId } = req.params;
+    const { status } = req.body;
+    if (!['accepted', 'declined'].includes(status)) {
+      return res.status(400).json({ success: false, error: "Invalid status" });
+    }
+    const result = updateProjectApplicationStatus(appId, status, req.user.id);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/api/user/:id/projects", authenticateToken, (req, res) => {
+  try {
+    const projects = getUserProjects(req.params.id);
+    res.json({ success: true, projects });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// User Stats
+app.get("/api/user/:id/stats", authenticateToken, (req, res) => {
+  try {
+    const stats = getUserStats(req.params.id);
+    res.json({ success: true, stats });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// Clubs
+app.get("/api/clubs", authenticateToken, (req, res) => {
+  try {
+    const clubs = getClubs(req.user.id);
+    res.json({ success: true, clubs });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.post("/api/clubs", authenticateToken, (req, res) => {
+  try {
+    const { name, description, category } = req.body;
+    if (!name) return res.status(400).json({ success: false, error: "Name required" });
+    const result = createClub(req.user.id, { name, description, category });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/clubs/:id/join", authenticateToken, (req, res) => {
+  try {
+    const result = joinClub(req.user.id, req.params.id);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/clubs/:id/leave", authenticateToken, (req, res) => {
+  try {
+    const result = leaveClub(req.user.id, req.params.id);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// Events
+app.get("/api/events", authenticateToken, (req, res) => {
+  try {
+    const events = getEvents(req.user.id);
+    res.json({ success: true, events });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.post("/api/events", authenticateToken, (req, res) => {
+  try {
+    const { title, description, start_time, end_time, location, club_id } = req.body;
+    if (!title || !start_time || !end_time) {
+      return res.status(400).json({ success: false, error: "title, start_time, end_time required" });
+    }
+    const result = createEvent(req.user.id, { title, description, start_time, end_time, location, club_id });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/events/:id/register", authenticateToken, (req, res) => {
+  try {
+    const result = registerForEvent(req.user.id, req.params.id);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/events/:id/unregister", authenticateToken, (req, res) => {
+  try {
+    const result = unregisterFromEvent(req.user.id, req.params.id);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
   }
 });
 

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkillConnect - Professional Network</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
 </head>
 
 <body>
@@ -21,6 +21,7 @@
                 <nav>
                     <ul>
                         <li><a href="#" class="nav-link active" data-page="dashboard">Dashboard</a></li>
+                        <li><a href="#" class="nav-link" data-page="profile">Profile</a></li>
                         <li><a href="#" class="nav-link" data-page="network">Network</a></li>
                         <li><a href="#" class="nav-link" data-page="clubs">Clubs</a></li>
                         <li><a href="#" class="nav-link" data-page="events">Events</a></li>
@@ -96,136 +97,7 @@
         <div class="container student-dashboard">
             <h1 style="margin-bottom: 30px; font-weight: 900; text-transform: uppercase; border-bottom: 4px solid #000; padding-bottom: 10px; display: inline-block;">Student Dashboard</h1>
 
-            <div class="main-content fade-in">
-                <!-- Left Sidebar - Profile -->
-                <div class="left-sidebar">
-                    <div class="card profile-card">
-                        <div class="profile-avatar">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <div class="profile-name" id="studentName">Student User</div>
-                        <div class="profile-title" id="studentTitle">Computer Science Student</div>
-                        <div class="profile-stats">
-                            <div class="stat">
-                                <div class="stat-value" id="studentConnections">12</div>
-                                <div class="stat-label">Connections</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="studentProjects">5</div>
-                                <div class="stat-label">Projects</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="studentSkills">8</div>
-                                <div class="stat-label">Skills</div>
-                            </div>
-                        </div>
-                        
-                        <!-- LinkedIn Section -->
-                        <div class="linkedin-section" style="margin: 20px 0 15px 0; padding: 15px; background: rgba(0, 119, 181, 0.05); border-radius: 10px;">
-                            <h4 style="margin-bottom: 10px; color: var(--dark); font-size: 0.95rem;">
-                                <i class="fab fa-linkedin"></i> LinkedIn Profile
-                            </h4>
-                            <div id="studentLinkedinStatus" style="color: var(--gray); font-size: 0.85rem; margin-bottom: 10px;">
-                                Not connected
-                            </div>
-                            <button class="btn btn-linkedin" style="width: 100%;" id="connectStudentLinkedinBtn">
-                                <i class="fab fa-linkedin"></i> Connect LinkedIn Profile
-                            </button>
-                            <button class="btn btn-outline" style="width: 100%; margin-top: 8px; display: none;" id="viewStudentLinkedinBtn">
-                                <i class="fab fa-linkedin"></i> View LinkedIn Profile
-                            </button>
-                        </div>
-                        
-                        <button class="btn btn-student" style="width: 100%; margin-bottom: 10px;" id="editStudentProfileBtn">
-                            <i class="fas fa-edit"></i> Edit Profile
-                        </button>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">My Skills</div>
-                        </div>
-                        <div class="skills-list" id="studentSkillsList">
-                            <span class="skill-tag" data-level="advanced" data-category="programming">
-                                JavaScript
-                                <span class="skill-level-badge">Advanced</span>
-                            </span>
-                            <span class="skill-tag" data-level="intermediate" data-category="programming">
-                                React
-                                <span class="skill-level-badge">Intermediate</span>
-                            </span>
-                            <span class="skill-tag" data-level="intermediate" data-category="programming">
-                                Node.js
-                                <span class="skill-level-badge">Intermediate</span>
-                            </span>
-                            <span class="skill-tag" data-level="intermediate" data-category="programming">
-                                Python
-                                <span class="skill-level-badge">Intermediate</span>
-                            </span>
-                            <span class="skill-tag" data-level="beginner" data-category="design">
-                                UI/UX Design
-                                <span class="skill-level-badge">Beginner</span>
-                            </span>
-                        </div>
-                        <button class="btn btn-outline" style="width: 100%; margin-top: 15px;" id="addStudentSkillBtn">
-                            <i class="fas fa-plus"></i> Add Skill
-                        </button>
-                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" id="enhanceSkillBtn">
-                            <i class="fas fa-magic"></i> Enhance Skills (AI)
-                        </button>
-
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">GitHub Analysis</div>
-                        </div>
-                        <div id="studentGithubAnalysis">
-                            <div class="repo-card">
-                                <div class="repo-header">
-                                    <div class="repo-name">personal-portfolio</div>
-                                    <div class="repo-stats">
-                                        <span><i class="fas fa-star"></i> 24</span>
-                                        <span><i class="fas fa-code-branch"></i> 5</span>
-                                    </div>
-                                </div>
-                                <p>Personal portfolio website</p>
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 85%"></div>
-                                </div>
-                                <div style="font-size: 0.9rem; margin-top: 5px;">Code Quality: 85%</div>
-                            </div>
-                        <div id="studentGithubStatus" style="text-align: center; margin: 10px 0; font-size: 0.9rem; color: var(--gray);">
-                            Analysis based on connected repositories.
-                        </div>
-                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;"
-                            id="connectStudentGithubBtn">
-                            <i class="fab fa-github"></i> Connect GitHub
-                        </button>
-                        <button class="btn btn-outline" style="width: 100%; margin-top: 10px; display: none;"
-                            id="viewStudentGithubBtn">
-                            <i class="fab fa-github"></i> View GitHub
-                        </button>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">LinkedIn Profile</div>
-                        </div>
-                        <div id="studentLinkedinStatus" style="text-align: center; margin: 15px 0; font-size: 0.9rem; color: var(--gray);">
-                            No LinkedIn account connected.
-                        </div>
-                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;"
-                            id="connectStudentLinkedinBtn">
-                            <i class="fab fa-linkedin"></i> Connect LinkedIn
-                        </button>
-                        <button class="btn btn-outline" style="width: 100%; margin-top: 10px; display: none;"
-                            id="viewStudentLinkedinBtn">
-                            <i class="fab fa-linkedin"></i> View LinkedIn
-                        </button>
-                    </div>
-                </div>
-
+            <div class="main-content fade-in student-dashboard-grid">
                 <!-- Center Feed -->
                 <div class="center-feed">
                     <div class="card project-upload">
@@ -600,7 +472,117 @@
         </div>
     </div>
 
-    <!-- Network Page -->
+    <!-- Profile Page -->
+    <div class="page" id="profile-page">
+        <div class="container">
+            <h1 style="margin-bottom: 30px; font-weight: 900; text-transform: uppercase; border-bottom: 4px solid #000; padding-bottom: 10px; display: inline-block;">My Profile</h1>
+
+            <!-- ROW 1: Profile Identity + Quick Stats -->
+            <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; margin-bottom: 20px;">
+
+                <!-- Profile Card -->
+                <div class="card profile-card" style="margin-bottom: 0;">
+                    <div class="profile-avatar"><i class="fas fa-user-graduate"></i></div>
+                    <div class="profile-name" id="studentName">Student User</div>
+                    <div class="profile-title" id="studentTitle">Computer Science Student</div>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="studentConnections">12</div>
+                            <div class="stat-label">Connections</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="studentProjects">5</div>
+                            <div class="stat-label">Projects</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="studentSkills">8</div>
+                            <div class="stat-label">Skills</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-student" style="width: 100%; margin-top: 15px;" id="editStudentProfileBtn">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                </div>
+
+                <!-- Right of profile: Activity & Projects -->
+                <div class="card" style="margin-bottom: 0; min-height: 220px;">
+                    <div class="card-header">
+                        <div class="card-title">Activity &amp; Projects</div>
+                    </div>
+                    <p style="color: var(--gray); text-align: center; padding: 30px 20px;">Your submitted projects and recent activity will be displayed here.</p>
+                </div>
+            </div>
+
+            <!-- ROW 2: My Skills + GitHub Analysis side by side -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+
+                <!-- My Skills -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header">
+                        <div class="card-title">My Skills</div>
+                    </div>
+                    <div class="skills-list" id="studentSkillsList">
+                        <span class="skill-tag" data-level="advanced" data-category="programming">JavaScript <span class="skill-level-badge">Advanced</span></span>
+                        <span class="skill-tag" data-level="intermediate" data-category="programming">React <span class="skill-level-badge">Intermediate</span></span>
+                        <span class="skill-tag" data-level="intermediate" data-category="programming">Node.js <span class="skill-level-badge">Intermediate</span></span>
+                        <span class="skill-tag" data-level="intermediate" data-category="programming">Python <span class="skill-level-badge">Intermediate</span></span>
+                        <span class="skill-tag" data-level="beginner" data-category="design">UI/UX Design <span class="skill-level-badge">Beginner</span></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-outline" style="flex: 1;" id="addStudentSkillBtn"><i class="fas fa-plus"></i> Add Skill</button>
+                        <button class="btn btn-primary" style="flex: 1;" id="enhanceSkillBtn"><i class="fas fa-magic"></i> Enhance (AI)</button>
+                    </div>
+                </div>
+
+                <!-- GitHub Analysis -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header">
+                        <div class="card-title">GitHub Analysis</div>
+                    </div>
+                    <div id="studentGithubAnalysis">
+                        <div class="repo-card">
+                            <div class="repo-header">
+                                <div class="repo-name">personal-portfolio</div>
+                                <div class="repo-stats">
+                                    <span><i class="fas fa-star"></i> 24</span>
+                                    <span><i class="fas fa-code-branch"></i> 5</span>
+                                </div>
+                            </div>
+                            <p>Personal portfolio website</p>
+                            <div class="progress-bar"><div class="progress" style="width: 85%"></div></div>
+                            <div style="font-size: 0.9rem; margin-top: 5px;">Code Quality: 85%</div>
+                        </div>
+                    </div>
+                    <div id="studentGithubStatus" style="text-align: center; margin: 10px 0; font-size: 0.9rem; color: var(--gray);">Analysis based on connected repositories.</div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn btn-primary" style="flex: 1;" id="connectStudentGithubBtn"><i class="fab fa-github"></i> Connect GitHub</button>
+                        <button class="btn btn-outline" style="flex: 1; display: none;" id="viewStudentGithubBtn"><i class="fab fa-github"></i> View GitHub</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: LinkedIn Profile (full width) -->
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <div class="card-title"><i class="fab fa-linkedin"></i> LinkedIn Profile</div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; padding: 10px 0;">
+                    <div>
+                        <div id="studentLinkedinStatus" style="color: var(--gray); font-size: 0.95rem; margin-bottom: 5px;">No LinkedIn account connected.</div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">Connect to share your profile with your network.</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-linkedin" id="connectStudentLinkedinBtn"><i class="fab fa-linkedin"></i> Connect LinkedIn</button>
+                        <button class="btn btn-outline" style="display: none;" id="viewStudentLinkedinBtn"><i class="fab fa-linkedin"></i> View Profile</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+<!-- Network Page -->
     <div class="page" id="network-page">
         <div class="container network-page">
             <div class="page-header">
@@ -1018,148 +1000,57 @@
         </div>
     </div>
 
-    <!-- Clubs Page (NEW 3 Column Layout) -->
+    <!-- Clubs Page (Dynamic) -->
     <div class="page" id="clubs-page">
         <div class="container club-management">
             <div class="page-header">
                 <h1 style="margin-bottom: 10px; color: var(--primary);">University Clubs</h1>
-                <p style="color: var(--gray);">Explore clubs, apply for opportunities & manage your memberships.</p>
+                <p style="color: var(--gray);">Explore clubs, join communities &amp; manage your memberships.</p>
             </div>
 
             <div class="main-content">
-                <!-- LEFT: My Clubs (Full Height) -->
+                <!-- LEFT: My Clubs -->
                 <div class="left-sidebar">
                     <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">My Clubs</div>
                         </div>
                         <div id="myClubsList" class="scrollable-content">
-                            <div class="club-card-custom">
-                                <strong>CodeOrbit Club</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Oct 2024</p>
-                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
-                            </div>
+                            <div style="color:var(--gray);padding:12px;">Loading...</div>
+                        </div>
+                    </div>
 
-                            <div class="club-card-custom">
-                                <strong>AI & Robotics Club</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Aug 2024</p>
-                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
-                            </div>
-                            
-                            <!-- Additional clubs for scroll demonstration -->
-                            <div class="club-card-custom">
-                                <strong>Web Dev Community</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Sep 2024</p>
-                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
-                            </div>
-                            
-                            <div class="club-card-custom">
-                                <strong>Data Science Society</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Joined • Member since Nov 2024</p>
-                                <button class="btn btn-outline btn-small leave-club-btn" style="margin-top: 8px;">Leave Club</button>
-                            </div>
+                    <!-- Create Club Form -->
+                    <div class="card" style="margin-top:16px;">
+                        <div class="card-header"><div class="card-title">Create a Club</div></div>
+                        <div style="padding:12px;">
+                            <input type="text" class="form-control" id="newClubName" placeholder="Club Name" style="margin-bottom:8px;">
+                            <textarea class="form-control" id="newClubDesc" rows="2" placeholder="Description (optional)" style="margin-bottom:8px;"></textarea>
+                            <input type="text" class="form-control" id="newClubCategory" placeholder="Category (e.g. tech, arts)" style="margin-bottom:10px;">
+                            <button class="btn btn-primary" id="createClubBtn" style="width:100%;"><i class="fas fa-plus"></i> Create Club</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- CENTER: Club Opportunities (Scrollable) -->
+                <!-- CENTER: Available Clubs -->
                 <div class="center-feed">
-                    <div class="card full-height-card">
-                        <div class="card-header">
-                            <div class="card-title">Club Opportunities</div>
-                            <div style="color:var(--gray); font-size:0.9rem;">Roles opened by clubs</div>
-                        </div>
-
-                        <div id="requestsContainer" class="scrollable-content">
-                            <div class="club-card-custom">
-                                <strong>CodeOrbit Club – Frontend Developer</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Looking for a React developer to maintain event portal UI.</p>
-                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
-                            </div>
-
-                            <div class="club-card-custom">
-                                <strong>HexSociety – Hardware Team</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Open for students interested in Arduino + IoT.</p>
-                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
-                            </div>
-
-                            <div class="club-card-custom">
-                                <strong>GDG – Web Pentester</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Seeking volunteers for penetration testing sessions.</p>
-                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
-                            </div>
-                            
-                            <!-- Additional opportunities for scroll demonstration -->
-                            <div class="club-card-custom">
-                                <strong>AI Club – ML Engineer</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Help develop machine learning models for projects.</p>
-                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
-                            </div>
-                            
-                            <div class="club-card-custom">
-                                <strong>Design Club – UI/UX Designer</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Design interfaces for club websites and apps.</p>
-                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
-                            </div>
-                            
-                            <div class="club-card-custom">
-                                <strong>Robotics Club – Programmer</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Code for robotics competitions and automation.</p>
-                                <button class="btn btn-primary btn-small" style="margin-top: 10px;">Apply</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RIGHT: Available Clubs (Full Height) -->
-                <div class="right-sidebar">
                     <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">All Clubs</div>
                         </div>
                         <div id="allClubsList" class="scrollable-content">
-                            <div class="club-card-custom">
-                                <strong>CodeOrbit Club</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Focuses on coding competitions, hackathons & software projects.</p>
-                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
-                            </div>
+                            <div style="color:var(--gray);padding:12px;">Loading clubs...</div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="club-card-custom">
-                                <strong>TechnoLab</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">
-                                    "Not just another event — it's a space where ideas spark, creativity thrives, and people grow."
-                                </p>
-                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
-                            </div>
-
-                            <div class="club-card-custom">
-                                <strong>HexSociety</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">
-                                    "Let's breathe some binary & code like there is no tomorrow."
-                                </p>
-                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
-                            </div>
-
-                            <div class="club-card-custom">
-                                <strong>GDG — Google Developer Group (On Campus)</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">
-                                    "Flex the Hex"
-                                </p>
-                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
-                            </div>
-                            
-                            <!-- Additional clubs for scroll demonstration -->
-                            <div class="club-card-custom">
-                                <strong>AI & Robotics Club</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Exploring artificial intelligence and robotic systems.</p>
-                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
-                            </div>
-                            
-                            <div class="club-card-custom">
-                                <strong>Data Science Society</strong>
-                                <p style="color: var(--gray); font-size: 0.9rem;">Data analysis, visualization, and machine learning applications.</p>
-                                <button class="btn btn-outline btn-small" style="margin-top: 8px;">Join Club</button>
-                            </div>
+                <!-- RIGHT: Quick Info -->
+                <div class="right-sidebar">
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">About Clubs</div></div>
+                        <div style="padding:12px;color:var(--gray);font-size:0.9rem;">
+                            <p>Join clubs to connect with people who share your interests.</p>
+                            <p style="margin-top:10px;">Create your own club and invite others to join!</p>
                         </div>
                     </div>
                 </div>
@@ -1207,13 +1098,12 @@
         </div>
     </div>
 
-    <!-- Event Page -->
+    <!-- Event Page (Dynamic) -->
     <div class="page" id="events-page">
         <div class="container events-page">
             <div class="page-header">
                 <h1 style="margin-bottom: 10px; color: var(--primary);">Events</h1>
-                <p style="color: var(--gray); margin-bottom: 30px;">Stay updated with department workshops,
-                    seminars, and competitions.</p>
+                <p style="color: var(--gray); margin-bottom: 30px;">Stay updated with workshops, seminars, and competitions.</p>
             </div>
 
             <div class="main-content">
@@ -1223,160 +1113,37 @@
                         <div class="card-header">
                             <div class="card-title">Upcoming Events</div>
                         </div>
-                        
-                        <div class="scrollable-content">
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">10</div>
-                                    <div class="event-month">DEC</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">AI & ML Workshop</div>
-                                    <div class="event-time">10:00 AM – 1:00 PM</div>
-                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
-                                </div>
-                            </div>
-
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">18</div>
-                                    <div class="event-month">DEC</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Git & GitHub Mastery</div>
-                                    <div class="event-time">2:00 PM – 5:00 PM</div>
-                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
-                                </div>
-                            </div>
-                            
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">22</div>
-                                    <div class="event-month">DEC</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Web Dev Bootcamp</div>
-                                    <div class="event-time">9:00 AM – 4:00 PM</div>
-                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
-                                </div>
-                            </div>
-                            
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">05</div>
-                                    <div class="event-month">JAN</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Data Science Summit</div>
-                                    <div class="event-time">11:00 AM – 2:00 PM</div>
-                                    <button class="btn btn-primary btn-small" style="margin-top: 5px;">Register</button>
-                                </div>
-                            </div>
+                        <div id="upcomingEventsList" class="scrollable-content">
+                            <div style="color:var(--gray);padding:12px;">Loading events...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- CENTER SECTION - Past Events -->
+                <!-- CENTER - My Events -->
                 <div class="center-feed">
                     <div class="card full-height-card">
                         <div class="card-header">
-                            <div class="card-title">Past Events</div>
+                            <div class="card-title">My Registered Events</div>
                         </div>
-                        
-                        <div class="scrollable-content">
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">05</div>
-                                    <div class="event-month">NOV</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Hackathon 2025</div>
-                                    <div class="event-time">Completed</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">120+ participants, 36 teams, 24-hour
-                                        challenge. Winning project: "AI Health Tracker".</p>
-                                </div>
-                            </div>
-
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">28</div>
-                                    <div class="event-month">OCT</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Cyber Security Bootcamp</div>
-                                    <div class="event-time">Completed</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">Covered exploits, network attacks,
-                                        and secure coding practices.</p>
-                                </div>
-                            </div>
-
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">15</div>
-                                    <div class="event-month">SEP</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">College Tech Expo</div>
-                                    <div class="event-time">Completed</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">40+ project showcases and panel
-                                        discussions with industry experts.</p>
-                                </div>
-                            </div>
-                            
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">08</div>
-                                    <div class="event-month">SEP</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Startup Pitch Day</div>
-                                    <div class="event-time">Completed</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">Student startups pitched to investors.</p>
-                                </div>
-                            </div>
-                            
-                            <div class="event-card">
-                                <div class="event-date">
-                                    <div class="event-day">25</div>
-                                    <div class="event-month">AUG</div>
-                                </div>
-                                <div class="event-details">
-                                    <div class="event-title">Mobile App Workshop</div>
-                                    <div class="event-time">Completed</div>
-                                    <p style="margin-top: 8px; color: var(--gray);">React Native & Flutter hands-on session.</p>
-                                </div>
-                            </div>
+                        <div id="myEventsList" class="scrollable-content">
+                            <div style="color:var(--gray);padding:12px;">Loading...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- RIGHT SIDEBAR - Event Stats -->
+                <!-- RIGHT - Create Event -->
                 <div class="right-sidebar">
                     <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Event Stats</div>
-                        </div>
-                        
-                        <div class="event-stats-grid">
-                            <div class="stat-card student" style="margin-bottom: 15px;">
-                                <div class="stat-number">12</div>
-                                <div class="stat-label">Events This Semester</div>
-                            </div>
-                            
-                            <div class="stat-card student" style="margin-bottom: 15px;">
-                                <div class="stat-number">5</div>
-                                <div class="stat-label">Workshops</div>
-                            </div>
-                            
-                            <div class="stat-card student" style="margin-bottom: 15px;">
-                                <div class="stat-number">3</div>
-                                <div class="stat-label">Competitions</div>
-                            </div>
-                            
-                            <div class="stat-card student">
-                                <div class="stat-number">89%</div>
-                                <div class="stat-label">Average Attendance</div>
-                            </div>
+                        <div class="card-header"><div class="card-title">Create Event</div></div>
+                        <div style="padding:12px;">
+                            <input type="text" class="form-control" id="newEventTitle" placeholder="Event Title" style="margin-bottom:8px;">
+                            <textarea class="form-control" id="newEventDesc" rows="2" placeholder="Description (optional)" style="margin-bottom:8px;"></textarea>
+                            <label style="font-size:0.85rem;font-weight:600;">Start Date &amp; Time</label>
+                            <input type="datetime-local" class="form-control" id="newEventStart" style="margin-bottom:8px;">
+                            <label style="font-size:0.85rem;font-weight:600;">End Date &amp; Time</label>
+                            <input type="datetime-local" class="form-control" id="newEventEnd" style="margin-bottom:8px;">
+                            <input type="text" class="form-control" id="newEventLocation" placeholder="Location (optional)" style="margin-bottom:10px;">
+                            <button class="btn btn-primary" id="createEventBtn" style="width:100%;"><i class="fas fa-plus"></i> Create Event</button>
                         </div>
                     </div>
                 </div>

@@ -837,35 +837,55 @@ async function initializeProjectsPage() {
     }
 }
 
+// Form handlers for creating events and clubs (wired on DOMContentLoaded)
 document.addEventListener('DOMContentLoaded', () => {
-    const postProjectBtn = document.getElementById('postProjectBtn');
-    if (postProjectBtn) {
-        postProjectBtn.addEventListener('click', async () => {
-            const title = document.getElementById('newProjectTitle').value;
-            const desc = document.getElementById('newProjectDesc').value;
-            const tags = document.getElementById('newProjectTags').value;
-            
-            if (!title || !desc) return showNotification('Title and Description required', 'error');
-            
+    // Create Event form
+    const createEventBtn = document.getElementById('createEventBtn');
+    if (createEventBtn) {
+        createEventBtn.addEventListener('click', async () => {
+            const title = document.getElementById('newEventTitle')?.value.trim();
+            const desc = document.getElementById('newEventDesc')?.value.trim();
+            const start = document.getElementById('newEventStart')?.value;
+            const end = document.getElementById('newEventEnd')?.value;
+            const loc = document.getElementById('newEventLocation')?.value.trim();
+            if (!title || !start || !end) return showNotification('Title, start and end time required', 'error');
             try {
-                const res = await authFetch(`${API_BASE}/api/projects`, {
+                const res = await authFetch(`${API_BASE}/api/events`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, description: desc, rolePlay: 'Collaborator', tags })
+                    body: JSON.stringify({ title, description: desc, start_time: start, end_time: end, location: loc })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showNotification('Project posted successfully!', 'success');
-                    document.getElementById('newProjectTitle').value = '';
-                    document.getElementById('newProjectDesc').value = '';
-                    document.getElementById('newProjectTags').value = '';
-                    initializeProjectsPage();
-                } else {
-                    showNotification(data.error || 'Failed', 'error');
-                }
-            } catch(e) {
-                showNotification('Network error', 'error');
-            }
+                    showNotification('Event created!', 'success');
+                    ['newEventTitle','newEventDesc','newEventStart','newEventEnd','newEventLocation'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+                    initializeEventsPage();
+                } else showNotification(data.error || 'Failed', 'error');
+            } catch(e) { showNotification('Network error', 'error'); }
+        });
+    }
+
+    // Create Club form
+    const createClubBtn = document.getElementById('createClubBtn');
+    if (createClubBtn) {
+        createClubBtn.addEventListener('click', async () => {
+            const name = document.getElementById('newClubName')?.value.trim();
+            const desc = document.getElementById('newClubDesc')?.value.trim();
+            const cat = document.getElementById('newClubCategory')?.value.trim();
+            if (!name) return showNotification('Club name required', 'error');
+            try {
+                const res = await authFetch(`${API_BASE}/api/clubs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: desc, category: cat })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification('Club created!', 'success');
+                    ['newClubName','newClubDesc','newClubCategory'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+                    initializeClubsPage();
+                } else showNotification(data.error || 'Failed', 'error');
+            } catch(e) { showNotification('Network error', 'error'); }
         });
     }
 });
@@ -884,35 +904,46 @@ function showPage(pageId) {
         return;
     }
 
-    // Handle skill-summary page
     if (pageId === 'skill-summary') {
         document.getElementById('skill-summary-page')?.classList.add('active');
         return;
     }
 
     const pageEl = document.getElementById(`${pageId}-page`);
-    if (pageEl) {
-        pageEl.classList.add('active');
-    }
+    if (pageEl) pageEl.classList.add('active');
 
-    if (pageId === 'network') {
-        setTimeout(initializeNetworkPage, 100);
-    }
+    if (pageId === 'network') setTimeout(initializeNetworkPage, 100);
+    if (pageId === 'clubs') setTimeout(initializeClubsPage, 100);
+    if (pageId === 'projects') setTimeout(initializeProjectsPage, 150);
+    if (pageId === 'events') setTimeout(initializeEventsPage, 100);
+    if (pageId === 'profile') setTimeout(loadProfilePage, 100);
+}
 
-    if (pageId === 'clubs') {
-        setTimeout(() => {
-            initializeJoinClubButtons();
-            updateMyClubsUI();
-        }, 100);
+async function loadProfilePage() {
+    if (!currentUser?.id) return;
+    // Load activity & projects into the right panel
+    const activityEl = document.getElementById('profileActivityFeed');
+    if (activityEl) {
+        activityEl.innerHTML = '<div style="color:var(--gray);padding:10px;">Loading...</div>';
+        try {
+            const res = await authFetch(`${API_BASE}/api/user/${currentUser.id}/projects`);
+            const data = await res.json();
+            if (data.success && data.projects.length) {
+                activityEl.innerHTML = data.projects.map(p => `
+                    <div style="border-bottom:1px solid var(--border);padding:12px 0;">
+                        <div style="font-weight:700;">${p.title}</div>
+                        <div style="color:var(--gray);font-size:0.9rem;margin-top:4px;">${p.description}</div>
+                        <div style="font-size:0.8rem;color:var(--gray);margin-top:4px;">${new Date(p.created_at).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            } else {
+                activityEl.innerHTML = "<div style='color:var(--gray);padding:10px;'>No projects yet. Post one from the Projects page!</div>";
+            }
+        } catch(e) {
+            activityEl.innerHTML = "<div style='color:var(--gray);padding:10px;'>Could not load projects.</div>";
+        }
     }
-
-    if (pageId === 'projects') {
-        setTimeout(initializeProjectsPage, 150);
-    }
-
-    if (pageId === 'events') {
-        setTimeout(initializeEventsPage, 100);
-    }
+    await loadUserStats();
 }
 
 //login handle — uses SQL database via /api/login
@@ -1003,7 +1034,7 @@ function showDashboard() {
     mainHeader.classList.remove('hidden');
     mainFooter.classList.remove('hidden');
 
-    applyRoleBasedUI(currentRole); // role-based navbar + UI
+    applyRoleBasedUI(currentRole);
 
     pages.forEach(p => p.classList.remove('active'));
     document.getElementById('login-page').classList.remove('active');
@@ -1012,17 +1043,15 @@ function showDashboard() {
 
     document.getElementById(cfg.dashboardId).classList.add('active');
     document.getElementById(cfg.nameId).textContent = currentUser.name;
-    document.getElementById(cfg.titleId).textContent = currentUser.title;
+    document.getElementById(cfg.titleId).textContent = currentUser.title || '';
 
     navLinks.forEach(n => n.classList.remove('active'));
     document.querySelector('[data-page="dashboard"]').classList.add('active');
 
     setTimeout(initializeSkills, 100);
-    
-    // Initialize LinkedIn buttons
     initializeLinkedInButtons();
     setTimeout(initializeLinkedInOnDashboardLoad, 150);
-    
+
     // Profile Modal initialization
     createProfileModal();
     const editStudentBtn = document.getElementById('editStudentProfileBtn');
@@ -1034,6 +1063,28 @@ function showDashboard() {
     if (editFacultyBtn && !editFacultyBtn.hasAttribute('data-init')) {
         editFacultyBtn.setAttribute('data-init', 'true');
         editFacultyBtn.addEventListener('click', openProfileModal);
+    }
+
+    // Load real stats from DB
+    loadUserStats();
+}
+
+async function loadUserStats() {
+    if (!currentUser?.id) return;
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/${currentUser.id}/stats`);
+        const data = await res.json();
+        if (data.success) {
+            const s = data.stats;
+            const connEl = document.getElementById('studentConnections');
+            const projEl = document.getElementById('studentProjects');
+            const skillEl = document.getElementById('studentSkills');
+            if (connEl) connEl.textContent = s.connections;
+            if (projEl) projEl.textContent = s.projects;
+            if (skillEl) skillEl.textContent = s.skills;
+        }
+    } catch(e) {
+        console.error('Stats load error', e);
     }
 }
 
@@ -1572,44 +1623,40 @@ function pc_renderProjectFeed() {
     });
 }
 
-//posting a projcet
-document.getElementById('pc_postProjectBtn')?.addEventListener('click', () => {
-    const title = pc_projTitle.value.trim();
-    const desc = pc_projDesc.value.trim();
-    const repo = pc_projGithub.value.trim();
-    const skills = pc_projSkills.value.trim().split(",").map(s => s.trim()).filter(Boolean);
-    const roles = pc_projRoles.value.trim();
+
+// Post Project via API
+document.getElementById('pc_postProjectBtn')?.addEventListener('click', async () => {
+    const title = document.getElementById('pc_projTitle')?.value.trim();
+    const desc = document.getElementById('pc_projDesc')?.value.trim();
+    const github = document.getElementById('pc_projGithub')?.value.trim();
 
     if (!title || !desc) {
         showNotification("Please enter project title and description", "error");
         return;
     }
 
-    const newProj = {
-        id: "proj_" + Date.now(),
-        owner: currentUser ? currentUser.name : "You",
-        title,
-        description: desc,
-        github: repo,
-        skills,
-        roles,
-        team: []
-    };
-
-    pc_projects.unshift(newProj);
-
-    pc_renderProjectFeed();
-    pc_renderMyProjects();
-    pc_renderIncomingRequests();
-
-    showNotification("Project posted!", "success");
-
-    pc_projTitle.value = "";
-    pc_projDesc.value = "";
-    pc_projGithub.value = "";
-    pc_projSkills.value = "";
-    pc_projRoles.value = "";
+    try {
+        const res = await authFetch(`${API_BASE}/api/projects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description: desc, github_repo_url: github })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showNotification("Project posted!", "success");
+            document.getElementById('pc_projTitle').value = "";
+            document.getElementById('pc_projDesc').value = "";
+            document.getElementById('pc_projGithub').value = "";
+            await pc_onProjectsPageShow();
+            loadUserStats();
+        } else {
+            showNotification(data.error || "Failed to post project", "error");
+        }
+    } catch(e) {
+        showNotification("Network error", "error");
+    }
 });
+
 
 //join btn
 document.addEventListener('click', (e) => {
@@ -1742,109 +1789,212 @@ document.getElementById('pc_closeAnalyseBtn')?.addEventListener('click', () => {
     document.getElementById('pc_analyseModal').style.display = 'none';
 });
 
-//example data
-function pc_initializeDemoContent() {
-    if (pc_projects.length) return;
-
-    pc_projects = [
-        {
-            id: "demo_1",
-            owner: "Jasmeet Khanwani",
-            title: "Smart Timetable Optimizer",
-            description: "Optimize student timetables using ML and constraints.",
-            github: "",
-            skills: ["Python", "OR-Tools"],
-            roles: "ML Engineer",
-            team: []
-        },
-        {
-            id: "demo_2",
-            owner: "Aditi Dube",
-            title: "Campus Events Portal",
-            description: "Events listing & registration platform.",
-            github: "",
-            skills: ["React", "Node.js"],
-            roles: "Frontend / Backend",
-            team: []
-        }
-    ];
-
-    pc_requests = [
-        {
-            id: "demo_req_1",
-            projectId: "demo_2",
-            applicantName: "Namita Shastri",
-            github: "https://github.com/example/alex",
-            comment: "I can help with frontend UI.",
-            skills: ["React", "Firebase"]
-        }
-    ];
+// ---- Project Collaboration Page (API-backed) ----
+async function pc_onProjectsPageShow() {
+    await pc_renderMyProjects();
+    await pc_renderProjectFeed();
+    await pc_renderIncomingRequests();
 }
 
-function pc_addTestRequests() {
-    const myName = currentUser ? currentUser.name : "You";
-
-    const testProj = {
-        id: "proj_test",
-        owner: myName,
-        title: "AI Chatbot for College",
-        description: "AI chatbot to answer college FAQs.",
-        github: "https://github.com/college/chatbot",
-        skills: ["Python", "NLP"],
-        roles: "ML Engineer",
-        team: []
-    };
-
-    if (!pc_projects.find(p => p.id === "proj_test")) {
-        pc_projects.unshift(testProj);
+async function pc_renderMyProjects() {
+    const container = document.getElementById('myProjectsList');
+    if (!container) return;
+    container.innerHTML = '<div style="color:var(--gray);padding:12px;">Loading...</div>';
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/${currentUser.id}/projects`);
+        const data = await res.json();
+        container.innerHTML = '';
+        if (!data.success || !data.projects.length) {
+            container.innerHTML = '<div style="color:var(--gray);padding:12px;">You have not posted any projects yet. Use the form to add one.</div>';
+            return;
+        }
+        data.projects.forEach(p => {
+            const pending = p.pending_applications || 0;
+            container.innerHTML += `
+            <div class="project-card-custom">
+                <strong>${p.title}</strong>
+                <div style="color:var(--gray);font-size:0.9rem;margin-top:6px;">${p.description}</div>
+                ${p.github_repo_url ? `<div style="margin-top:8px;"><a href="${p.github_repo_url}" class="btn btn-outline btn-small" target="_blank">GitHub</a></div>` : ''}
+                <div style="margin-top:8px;font-size:0.85rem;">
+                    <strong>Status:</strong> ${p.status} &bull; <strong>Applications</strong>: ${pending} pending
+                </div>
+                <div style="margin-top:8px;">
+                    <button class="btn btn-outline btn-small pc-view-apps-btn" data-project-id="${p.id}" data-project-title="${p.title}">View Applications</button>
+                </div>
+            </div>`;
+        });
+        document.querySelectorAll('.pc-view-apps-btn').forEach(btn => {
+            btn.addEventListener('click', () => pc_openApplicationsModal(btn.dataset.projectId, btn.dataset.projectTitle));
+        });
+    } catch(e) {
+        container.innerHTML = '<div style="color:red;padding:12px;">Failed to load projects.</div>';
     }
-
-    const r1 = {
-        id: "req_test_01",
-        projectId: "proj_test",
-        applicantName: "Saksham Dubey",
-        github: "https://github.com/rohan/ai-projects",
-        comment: "I have ML experience and want to contribute.",
-        skills: ["Python", "TensorFlow"]
-    };
-
-    const r2 = {
-        id: "req_test_02",
-        projectId: "proj_test",
-        applicantName: "Janak Parmar",
-        github: "https://github.com/aisha/react-dashboard",
-        comment: "I can help with frontend UI and design.",
-        skills: ["React", "UI/UX"]
-    };
-
-    if (!pc_requests.find(r => r.id === "req_test_01")) pc_requests.push(r1);
-    if (!pc_requests.find(r => r.id === "req_test_02")) pc_requests.push(r2);
 }
 
-function pc_onProjectsPageShow() {
-    pc_initializeDemoContent();
-    pc_addTestRequests();
-
-    pc_renderMyProjects();
-    pc_renderProjectFeed();
-    pc_renderIncomingRequests();
-}
-
-// Activate when Projects page opens
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('projects-page')?.classList.contains('active')) {
-        pc_onProjectsPageShow();
-    }
-});
-
-document.querySelectorAll('.nav-link').forEach(nav => {
-    nav.addEventListener('click', e => {
-        const page = e.target.getAttribute('data-page');
-        if (page === 'projects') {
-            setTimeout(pc_onProjectsPageShow, 150);
+async function pc_renderProjectFeed() {
+    const container = document.getElementById('projectFeedList');
+    if (!container) return;
+    container.innerHTML = '<div style="color:var(--gray);padding:12px;">Loading...</div>';
+    try {
+        const res = await authFetch(`${API_BASE}/api/projects`);
+        const data = await res.json();
+        container.innerHTML = '';
+        const others = (data.projects || []).filter(p => p.owner_id !== currentUser.id);
+        if (!others.length) {
+            container.innerHTML = '<div style="color:var(--gray);padding:12px;">No projects from others yet.</div>';
+            return;
         }
-    });
-});
+        others.forEach(p => {
+            container.innerHTML += `
+            <div class="project-card-custom">
+                <div class="project-owner" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <div class="avatar" style="width:36px;height:36px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">${(p.owner_name||'?').charAt(0)}</div>
+                    <div>
+                        <div style="font-weight:600;">${p.title}</div>
+                        <div style="color:var(--gray);font-size:0.85rem;">by ${p.owner_name}</div>
+                    </div>
+                </div>
+                <div style="color:var(--gray);">${p.description}</div>
+                ${p.github_repo_url ? `<div style="margin-top:8px;"><a href="${p.github_repo_url}" class="btn btn-outline btn-small" target="_blank">GitHub</a></div>` : ''}
+                <div style="margin-top:10px;">
+                    <button class="btn btn-primary btn-small pc-apply-btn" data-id="${p.id}">Apply to Join</button>
+                </div>
+            </div>`;
+        });
+        document.querySelectorAll('.pc-apply-btn').forEach(btn => {
+            btn.addEventListener('click', () => pc_openApplyModal(btn.dataset.id));
+        });
+    } catch(e) {
+        container.innerHTML = '<div style="color:red;padding:12px;">Failed to load project feed.</div>';
+    }
+}
+
+async function pc_renderIncomingRequests() {
+    const container = document.getElementById('incomingRequestsList');
+    if (!container) return;
+    container.innerHTML = '<div style="color:var(--gray);padding:12px;">Loading...</div>';
+    // Applications across all MY projects
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/${currentUser.id}/projects`);
+        const pData = await res.json();
+        container.innerHTML = '';
+        if (!pData.success || !pData.projects.length) {
+            container.innerHTML = '<div style="color:var(--gray);padding:12px;">No incoming requests yet.</div>';
+            return;
+        }
+        let found = false;
+        for (const proj of pData.projects) {
+            const aRes = await authFetch(`${API_BASE}/api/projects/${proj.id}/applications`);
+            const aData = await aRes.json();
+            const pending = (aData.applications || []).filter(a => a.status === 'pending');
+            pending.forEach(a => {
+                found = true;
+                container.innerHTML += `
+                <div class="request-card clean-request-card" data-app-id="${a.id}" data-project-id="${proj.id}">
+                    <div class="req-top" style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div class="req-name" style="font-weight:700;">${a.applicant_name}</div>
+                            <div class="req-project" style="font-size:0.85rem;color:var(--gray);">applied for <strong>${proj.title}</strong></div>
+                        </div>
+                        <button class="btn btn-outline btn-small pc-analyse-btn" data-github="${a.applicant_github||''}" data-name="${a.applicant_name}">Analyse</button>
+                    </div>
+                    <div class="req-comment" style="margin-top:8px;font-size:0.9rem;color:var(--gray);">${a.message||''}</div>
+                    ${a.github_link ? `<a href="${a.github_link}" target="_blank" class="btn btn-outline btn-small" style="margin-top:8px;">GitHub</a>` : ''}
+                    <div class="req-actions" style="margin-top:10px;display:flex;gap:8px;">
+                        <button class="btn btn-primary btn-small pc-accept-req" data-app-id="${a.id}" data-project-id="${proj.id}">Accept</button>
+                        <button class="btn btn-danger btn-small pc-decline-req" data-app-id="${a.id}" data-project-id="${proj.id}">Decline</button>
+                    </div>
+                </div>`;
+            });
+        }
+        if (!found) container.innerHTML = '<div style="color:var(--gray);padding:12px;">No incoming requests yet.</div>';
+
+        // Bind accept/decline
+        container.querySelectorAll('.pc-accept-req').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                await updateAppStatus(btn.dataset.appId, btn.dataset.projectId, 'accepted');
+            });
+        });
+        container.querySelectorAll('.pc-decline-req').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                await updateAppStatus(btn.dataset.appId, btn.dataset.projectId, 'declined');
+            });
+        });
+        container.querySelectorAll('.pc-analyse-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                pc_openAnalyseModal({ applicantName: btn.dataset.name, github: btn.dataset.github, skills: [] });
+            });
+        });
+    } catch(e) {
+        container.innerHTML = '<div style="color:red;padding:12px;">Failed to load requests.</div>';
+    }
+}
+
+async function updateAppStatus(appId, projectId, status) {
+    try {
+        const res = await authFetch(`${API_BASE}/api/projects/${projectId}/applications/${appId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showNotification(`Application ${status}!`, status === 'accepted' ? 'success' : 'error');
+            pc_renderIncomingRequests();
+            pc_renderMyProjects();
+            loadUserStats();
+        } else {
+            showNotification(data.error || 'Failed', 'error');
+        }
+    } catch(e) {
+        showNotification('Network error', 'error');
+    }
+}
+
+function pc_openApplyModal(projectId) {
+    const msg = prompt('Why do you want to join this project?', '');
+    const ghLink = prompt('Your GitHub link (optional):', currentUser.github_url || '');
+    if (msg === null) return;
+    authFetch(`${API_BASE}/api/projects/${projectId}/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, github_link: ghLink || '' })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            showNotification('Application sent!', 'success');
+            pc_renderProjectFeed();
+        } else {
+            showNotification(data.error || 'Failed to apply', 'error');
+        }
+    }).catch(() => showNotification('Network error', 'error'));
+}
+
+async function pc_openApplicationsModal(projectId, projectTitle) {
+    const modal = document.getElementById('pc_analyseModal');
+    const content = document.getElementById('pc_analyseContent');
+    if (!modal || !content) return;
+    modal.style.display = 'flex';
+    content.innerHTML = `<p style="color:var(--gray);">Loading applications for <strong>${projectTitle}</strong>...</p>`;
+    try {
+        const res = await authFetch(`${API_BASE}/api/projects/${projectId}/applications`);
+        const data = await res.json();
+        const apps = data.applications || [];
+        if (!apps.length) {
+            content.innerHTML = '<p style="color:var(--gray);">No applications yet.</p>';
+            return;
+        }
+        content.innerHTML = `<h4 style="margin-bottom:12px;">Applications for ${projectTitle}</h4>` +
+            apps.map(a => `
+            <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+                <strong>${a.applicant_name}</strong> <span style="color:var(--gray);font-size:0.85rem;">(${a.status})</span><br>
+                <span style="font-size:0.9rem;color:var(--gray);">${a.message||''}</span><br>
+                ${a.github_link ? `<a href="${a.github_link}" target="_blank" style="font-size:0.85rem;">GitHub</a>` : ''}
+            </div>`).join('');
+    } catch(e) {
+        content.innerHTML = '<p style="color:red;">Failed to load.</p>';
+    }
+}
+
 
 //forcing skill buttons to work on loading of page
 window.addEventListener("load", () => {
@@ -2405,57 +2555,185 @@ function initializeLinkedInOnDashboardLoad() {
     }
 }
 
-// Initialize clubs page scroll functionality
-function initializeClubsPage() {
-    const clubCards = document.querySelectorAll('#allClubsList .club-card-custom .btn-outline');
-    clubCards.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const clubName = this.closest('.club-card-custom')
-                .querySelector('strong').textContent;
-            
-            this.textContent = "Joined ✔";
-            this.classList.remove("btn-outline");
-            this.classList.add("btn-primary");
-            this.disabled = true;
-            
-            showNotification(`Joined ${clubName}`, "success");
-        });
-    });
-}
+// Initialize clubs page — fully dynamic from API
+async function initializeClubsPage() {
+    const allList = document.getElementById('allClubsList');
+    const myList = document.getElementById('myClubsList');
+    if (!allList) return;
 
-// Initialize events page
-function initializeEventsPage() {
-    // Make all scrollable content functional
-    const scrollableElements = document.querySelectorAll('.scrollable-content');
-    scrollableElements.forEach(el => {
-        if (el.scrollHeight > el.clientHeight) {
-            el.style.overflowY = 'auto';
+    allList.innerHTML = '<div style="color:var(--gray);padding:20px;">Loading clubs...</div>';
+    if (myList) myList.innerHTML = '';
+
+    try {
+        const res = await authFetch(`${API_BASE}/api/clubs`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+
+        const clubs = data.clubs;
+        allList.innerHTML = '';
+        if (myList) myList.innerHTML = '';
+
+        if (clubs.length === 0) {
+            allList.innerHTML = '<div style="color:var(--gray);padding:12px;">No clubs yet. Be the first to create one!</div>';
         }
-    });
+
+        clubs.forEach(club => {
+            const isMember = club.is_member;
+            const card = document.createElement('div');
+            card.className = 'club-card-custom';
+            card.dataset.clubId = club.id;
+            card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+                    <div>
+                        <strong>${club.name}</strong>
+                        ${club.category ? `<span class="skill-tag" style="font-size:0.75rem;padding:2px 8px;margin-left:6px;">${club.category}</span>` : ''}
+                        <p style="color:var(--gray);font-size:0.9rem;margin-top:4px;">${club.description || ''}</p>
+                        <small style="color:var(--gray);">${club.member_count} member${club.member_count !== 1 ? 's' : ''}</small>
+                    </div>
+                    <button class="btn ${isMember ? 'btn-primary' : 'btn-outline'} club-toggle-btn" data-club-id="${club.id}" data-club-name="${club.name}" ${isMember ? 'data-joined="true"' : ''}>
+                        ${isMember ? 'Leave' : 'Join Club'}
+                    </button>
+                </div>
+            `;
+            allList.appendChild(card);
+
+            if (isMember && myList) {
+                const myCard = document.createElement('div');
+                myCard.className = 'club-card-custom';
+                myCard.innerHTML = `<strong>${club.name}</strong><p style="color:var(--gray);font-size:0.9rem;">Member &bull; ${club.member_count} members</p>`;
+                myList.appendChild(myCard);
+            }
+        });
+
+        // Bind join/leave
+        allList.querySelectorAll('.club-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const cid = this.dataset.clubId;
+                const cname = this.dataset.clubName;
+                const joined = this.dataset.joined === 'true';
+                const endpoint = joined ? 'leave' : 'join';
+                try {
+                    const r = await authFetch(`${API_BASE}/api/clubs/${cid}/${endpoint}`, { method: 'POST' });
+                    const d = await r.json();
+                    if (d.success) {
+                        showNotification(joined ? `Left ${cname}` : `Joined ${cname}!`, joined ? 'error' : 'success');
+                        initializeClubsPage();
+                    } else {
+                        showNotification(d.error || 'Failed', 'error');
+                    }
+                } catch(e) {
+                    showNotification('Network error', 'error');
+                }
+            });
+        });
+
+    } catch(e) {
+        console.error('Clubs load error', e);
+        allList.innerHTML = '<div style="color:red;padding:12px;">Failed to load clubs.</div>';
+    }
 }
 
-//init loead
+// Initialize events page — fully dynamic from API
+async function initializeEventsPage() {
+    const upcomingEl = document.getElementById('upcomingEventsList');
+    const myEventsEl = document.getElementById('myEventsList');
+    if (!upcomingEl) return;
+
+    upcomingEl.innerHTML = '<div style="color:var(--gray);padding:20px;">Loading events...</div>';
+
+    try {
+        const res = await authFetch(`${API_BASE}/api/events`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+
+        const events = data.events;
+        upcomingEl.innerHTML = '';
+        if (myEventsEl) myEventsEl.innerHTML = '';
+
+        const now = new Date();
+        const upcoming = events.filter(e => new Date(e.start_time) >= now);
+        const myEvents = events.filter(e => e.is_registered);
+
+        if (upcoming.length === 0) {
+            upcomingEl.innerHTML = '<div style="color:var(--gray);padding:12px;">No upcoming events. Create one below!</div>';
+        }
+
+        upcoming.forEach(ev => {
+            const d = new Date(ev.start_time);
+            const day = d.getDate();
+            const month = d.toLocaleString('default', { month: 'short' });
+            const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.innerHTML = `
+                <div class="event-date">
+                    <div class="event-day">${day}</div>
+                    <div style="font-size:0.7rem;text-transform:uppercase;">${month}</div>
+                </div>
+                <div class="event-details" style="flex:1;">
+                    <div class="event-title">${ev.title}</div>
+                    <div class="event-time">${time}${ev.location ? ' &bull; ' + ev.location : ''}${ev.club_name ? ' &bull; ' + ev.club_name : ''}</div>
+                    <div style="font-size:0.85rem;color:var(--gray);margin-top:2px;">${ev.description || ''}</div>
+                    <div style="margin-top:8px;">
+                        <button class="btn ${ev.is_registered ? 'btn-outline' : 'btn-primary'} btn-small event-reg-btn" 
+                            data-event-id="${ev.id}" data-registered="${ev.is_registered}">
+                            ${ev.is_registered ? 'Cancel Registration' : 'Register'} (${ev.registration_count})
+                        </button>
+                    </div>
+                </div>
+            `;
+            upcomingEl.appendChild(card);
+        });
+
+        if (myEventsEl) {
+            if (myEvents.length === 0) {
+                myEventsEl.innerHTML = '<div style="color:var(--gray);padding:12px;">No events registered.</div>';
+            } else {
+                myEvents.forEach(ev => {
+                    const d = new Date(ev.start_time);
+                    const myCard = document.createElement('div');
+                    myCard.className = 'event-card';
+                    myCard.innerHTML = `
+                        <div class="event-date"><div class="event-day">${d.getDate()}</div></div>
+                        <div class="event-details"><div class="event-title">${ev.title}</div>
+                        <div class="event-time">${d.toLocaleDateString()}</div></div>
+                    `;
+                    myEventsEl.appendChild(myCard);
+                });
+            }
+        }
+
+        // Bind register/unregister
+        document.querySelectorAll('.event-reg-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const eid = this.dataset.eventId;
+                const isReg = this.dataset.registered === '1' || this.dataset.registered === 'true';
+                const endpoint = isReg ? 'unregister' : 'register';
+                try {
+                    const r = await authFetch(`${API_BASE}/api/events/${eid}/${endpoint}`, { method: 'POST' });
+                    const d = await r.json();
+                    if (d.success) {
+                        showNotification(isReg ? 'Unregistered from event' : 'Registered for event!', isReg ? 'error' : 'success');
+                        initializeEventsPage();
+                    } else {
+                        showNotification(d.error || 'Failed', 'error');
+                    }
+                } catch(e) {
+                    showNotification('Network error', 'error');
+                }
+            });
+        });
+
+    } catch(e) {
+        console.error('Events load error', e);
+        upcomingEl.innerHTML = '<div style="color:red;padding:12px;">Failed to load events.</div>';
+    }
+}
+
+// Init load
 window.addEventListener('load', () => {
-    if (!document.getElementById("skillModal")) {
-        createSkillModal();
-    }
-
-    if (!document.getElementById("enhanceModal")) {
-        createEnhanceModal();
-    }
-
+    if (!document.getElementById("skillModal")) createSkillModal();
+    if (!document.getElementById("enhanceModal")) createEnhanceModal();
     initializeExistingSkills();
     initializeLinkedInButtons();
-    
-    // Initialize when dashboard is shown
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.nav-link[data-page="dashboard"]')) {
-            setTimeout(initializeLinkedInOnDashboardLoad, 100);
-        }
-    });
-    
-    // Also initialize on page load if already on dashboard
-    if (document.querySelector('#student-dashboard.active') || document.querySelector('#faculty-dashboard.active')) {
-        setTimeout(initializeLinkedInOnDashboardLoad, 100);
-    }
 });

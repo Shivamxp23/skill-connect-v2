@@ -248,4 +248,109 @@ export function applyForProject(applicantId, projectId, applicationData) {
   return { success: true, id };
 }
 
+export function getProjectApplications(projectId) {
+  return db.prepare(`
+    SELECT pa.*, u.full_name as applicant_name, u.email as applicant_email, u.github_url as applicant_github
+    FROM project_applications pa
+    LEFT JOIN users u ON pa.applicant_id = u.id
+    WHERE pa.project_id = ?
+    ORDER BY pa.created_at DESC
+  `).all(projectId);
+}
+
+export function updateProjectApplicationStatus(appId, status, ownerId) {
+  const app = db.prepare("SELECT p.owner_id FROM project_applications pa JOIN projects p ON pa.project_id = p.id WHERE pa.id = ?").get(appId);
+  if (!app || app.owner_id !== ownerId) throw new Error("Unauthorized");
+  db.prepare("UPDATE project_applications SET status = ? WHERE id = ?").run(status, appId);
+  return { success: true };
+}
+
+export function getUserProjects(userId) {
+  return db.prepare(`
+    SELECT p.*, u.full_name as owner_name,
+      (SELECT COUNT(*) FROM project_applications WHERE project_id = p.id AND status = 'pending') as pending_applications
+    FROM projects p
+    LEFT JOIN users u ON p.owner_id = u.id
+    WHERE p.owner_id = ?
+    ORDER BY p.created_at DESC
+  `).all(userId);
+}
+
+// ---- Clubs ----
+export function getClubs(userId) {
+  return db.prepare(`
+    SELECT c.*, u.full_name as creator_name,
+      (SELECT COUNT(*) FROM club_memberships WHERE club_id = c.id) as member_count,
+      EXISTS(SELECT 1 FROM club_memberships WHERE club_id = c.id AND user_id = ?) as is_member
+    FROM clubs c
+    LEFT JOIN users u ON c.created_by = u.id
+    ORDER BY c.created_at DESC
+  `).all(userId);
+}
+
+export function createClub(userId, { name, description, category }) {
+  const existing = db.prepare("SELECT id FROM clubs WHERE name = ?").get(name);
+  if (existing) throw new Error("Club with this name already exists");
+  const id = randomUUID();
+  db.prepare("INSERT INTO clubs (id, name, description, category, created_by) VALUES (?, ?, ?, ?, ?)").run(id, name, description || '', category || 'general', userId);
+  db.prepare("INSERT INTO club_memberships (club_id, user_id, role) VALUES (?, ?, 'admin')").run(id, userId);
+  return { success: true, id };
+}
+
+export function joinClub(userId, clubId) {
+  const existing = db.prepare("SELECT 1 FROM club_memberships WHERE club_id = ? AND user_id = ?").get(clubId, userId);
+  if (existing) throw new Error("Already a member");
+  db.prepare("INSERT INTO club_memberships (club_id, user_id) VALUES (?, ?)").run(clubId, userId);
+  return { success: true };
+}
+
+export function leaveClub(userId, clubId) {
+  db.prepare("DELETE FROM club_memberships WHERE club_id = ? AND user_id = ?").run(clubId, userId);
+  return { success: true };
+}
+
+// ---- Events ----
+export function getEvents(userId) {
+  return db.prepare(`
+    SELECT e.*, c.name as club_name,
+      (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id) as registration_count,
+      EXISTS(SELECT 1 FROM event_registrations WHERE event_id = e.id AND user_id = ?) as is_registered
+    FROM events e
+    LEFT JOIN clubs c ON e.club_id = c.id
+    ORDER BY e.start_time ASC
+  `).all(userId);
+}
+
+export function createEvent(userId, { title, description, start_time, end_time, location, club_id }) {
+  const id = randomUUID();
+  db.prepare("INSERT INTO events (id, title, description, club_id, start_time, end_time, location) VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, title, description || '', club_id || null, start_time, end_time, location || '');
+  return { success: true, id };
+}
+
+export function registerForEvent(userId, eventId) {
+  const existing = db.prepare("SELECT 1 FROM event_registrations WHERE event_id = ? AND user_id = ?").get(eventId, userId);
+  if (existing) throw new Error("Already registered");
+  db.prepare("INSERT INTO event_registrations (event_id, user_id) VALUES (?, ?)").run(eventId, userId);
+  return { success: true };
+}
+
+export function unregisterFromEvent(userId, eventId) {
+  db.prepare("DELETE FROM event_registrations WHERE event_id = ? AND user_id = ?").run(eventId, userId);
+  return { success: true };
+}
+
+// ---- User Stats ----
+export function getUserStats(userId) {
+  const connections = db.prepare("SELECT COUNT(*) as count FROM connections WHERE (requester_id = ? OR receiver_id = ?) AND status = 'accepted'").get(userId, userId);
+  const projects = db.prepare("SELECT COUNT(*) as count FROM projects WHERE owner_id = ?").get(userId);
+  const skills = db.prepare("SELECT COUNT(*) as count FROM user_skills WHERE user_id = ?").get(userId);
+  const clubs = db.prepare("SELECT COUNT(*) as count FROM club_memberships WHERE user_id = ?").get(userId);
+  return {
+    connections: connections.count,
+    projects: projects.count,
+    skills: skills.count,
+    clubs: clubs.count
+  };
+}
+
 export default db;
